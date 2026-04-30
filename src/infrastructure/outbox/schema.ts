@@ -8,6 +8,7 @@ export const OUTBOX_MESSAGES_TABLE_DDL = `
 		event_type TEXT NOT NULL,
 		channel TEXT NOT NULL,
 		recipient TEXT NOT NULL,
+		subject TEXT,
 		body TEXT NOT NULL,
 		status TEXT NOT NULL DEFAULT 'pending',
 		created_at TEXT NOT NULL,
@@ -20,4 +21,13 @@ export const OUTBOX_MESSAGES_TABLE_DDL = `
 
 export async function initOutboxSchema(conn: SQLiteConnection): Promise<void> {
 	await conn.command(OUTBOX_MESSAGES_TABLE_DDL);
+
+	// Migration: add subject column to existing databases
+	// (CREATE TABLE above already includes it for fresh installs)
+	try {
+		await conn.command("ALTER TABLE outbox_messages ADD COLUMN subject TEXT");
+	} catch (e) {
+		if (!(e instanceof Error && e.message.includes("duplicate column")))
+			throw e;
+	}
 }

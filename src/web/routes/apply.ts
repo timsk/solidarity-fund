@@ -66,7 +66,9 @@ export function createApplyRoutes(
 		async showForm(): Promise<Response> {
 			const monthCycle = currentMonthCycle();
 			const open = await isWindowOpen(monthCycle, pool);
-			const html = open ? applyPage(closingTimestamp(monthCycle)) : applyClosedPage();
+			const html = open
+				? applyPage(closingTimestamp(monthCycle))
+				: applyClosedPage();
 			return new Response(html, {
 				headers: { "Content-Type": "text/html" },
 			});
@@ -241,7 +243,14 @@ export function createApplyRoutes(
 			const drawDate = url.searchParams.get("drawDate") || undefined;
 			const baseUrl = `${url.protocol}//${url.host}`;
 			return new Response(
-				applyResultPage(status, reason, ref, existingAppliedAt, drawDate, baseUrl),
+				applyResultPage(
+					status,
+					reason,
+					ref,
+					existingAppliedAt,
+					drawDate,
+					baseUrl,
+				),
 				{
 					headers: { "Content-Type": "text/html" },
 				},

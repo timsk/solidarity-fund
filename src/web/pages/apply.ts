@@ -201,15 +201,17 @@ export function applyResultPage(
 		<p class="text-bark-muted font-body">${escapeHtml(message)}</p>
 ${
 	ref
-		? (() => {
-				const statusUrl = baseUrl
-					? `${baseUrl}/status?ref=${encodeURIComponent(ref)}`
-					: `/status?ref=${encodeURIComponent(ref)}`;
-				return `		<div class="mt-6 pt-4 border-t border-bark-muted/20 text-left">
+		? (
+				() => {
+					const statusUrl = baseUrl
+						? `${baseUrl}/status?ref=${encodeURIComponent(ref)}`
+						: `/status?ref=${encodeURIComponent(ref)}`;
+					return `		<div class="mt-6 pt-4 border-t border-bark-muted/20 text-left">
 			<p class="text-xs text-bark-muted font-body mb-2">Save the following link to check the status of your application. Please check this page before contacting us with questions about your application.</p>
 			<a href="${escapeHtml(statusUrl)}" class="block font-mono text-sm text-bark break-all underline">${escapeHtml(statusUrl)}</a>
 		</div>`;
-			})()
+				}
+			)()
 		: ""
 }
 	</div>

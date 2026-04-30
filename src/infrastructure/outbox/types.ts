@@ -10,6 +10,7 @@ export interface OutboxMessage {
 	channel: OutboxChannel;
 	recipient: string;
 	body: string;
+	subject?: string;
 	status: OutboxStatus;
 	createdAt: string;
 	sentAt?: string;
@@ -24,6 +25,7 @@ export interface OutboxMessageInput {
 	channel: OutboxChannel;
 	recipient: string;
 	body: string;
+	subject?: string;
 	createdAt: string;
 }
 
@@ -31,5 +33,6 @@ export interface ChannelSender {
 	send(
 		recipient: string,
 		body: string,
+		subject?: string,
 	): Promise<{ success: boolean; messageId?: string; error?: string }>;
 }

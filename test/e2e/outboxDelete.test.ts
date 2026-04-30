@@ -51,9 +51,11 @@ test.describe("outbox delete", () => {
 
 		await page.waitForURL("**/outbox**", { timeout: 10000 });
 
-		await expect(page.locator("tr", { hasText: "Alice Seed" })).not.toBeVisible({
-			timeout: 5000,
-		});
+		await expect(page.locator("tr", { hasText: "Alice Seed" })).not.toBeVisible(
+			{
+				timeout: 5000,
+			},
+		);
 		await expect(page.locator("tr", { hasText: "Bob Seed" })).toBeVisible();
 		await expect(page.locator("tr", { hasText: "Carol Seed" })).toBeVisible();
 		await expect(page.locator("tr", { hasText: "Dave Seed" })).toBeVisible();
@@ -80,9 +82,11 @@ test.describe("outbox delete", () => {
 
 		await page.waitForURL("**/outbox**", { timeout: 10000 });
 
-		await expect(page.locator("tr", { hasText: "Alice Seed" })).not.toBeVisible({
-			timeout: 5000,
-		});
+		await expect(page.locator("tr", { hasText: "Alice Seed" })).not.toBeVisible(
+			{
+				timeout: 5000,
+			},
+		);
 		await expect(page.locator("tr", { hasText: "Bob Seed" })).not.toBeVisible({
 			timeout: 5000,
 		});

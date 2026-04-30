@@ -18,6 +18,7 @@ type DbRow = {
 	event_type: string;
 	channel: OutboxChannel;
 	recipient: string;
+	subject: string | null;
 	body: string;
 	status: OutboxStatus;
 	created_at: string;
@@ -34,6 +35,7 @@ function rowToOutboxMessage(row: DbRow): OutboxMessage {
 		eventType: row.event_type,
 		channel: row.channel,
 		recipient: row.recipient,
+		subject: row.subject ?? undefined,
 		body: row.body,
 		status: row.status,
 		createdAt: row.created_at,
@@ -56,13 +58,14 @@ export function createOutboxStore(pool: SQLiteConnectionPool) {
 			msg: OutboxMessageInput,
 		): Promise<boolean> {
 			const result = await conn.command(
-				`INSERT OR IGNORE INTO outbox_messages (event_stream, event_position, event_type, channel, recipient, body, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+				`INSERT OR IGNORE INTO outbox_messages (event_stream, event_position, event_type, channel, recipient, subject, body, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 				[
 					msg.eventStream,
 					Number(msg.eventPosition),
 					msg.eventType,
 					msg.channel,
 					msg.recipient,
+					msg.subject ?? null,
 					msg.body,
 					msg.createdAt,
 				],

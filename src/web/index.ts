@@ -1,6 +1,7 @@
 import { setFundName } from "../config.ts";
 import { createVolunteer } from "../domain/volunteer/commandHandlers.ts";
 import { SQLiteApplicantRepository } from "../infrastructure/applicant/sqliteApplicantRepository.ts";
+import { createEmailClient } from "../infrastructure/email/client.ts";
 import { createEventStore } from "../infrastructure/eventStore.ts";
 import { buildChannelSenders } from "../infrastructure/outbox/channelSenders.ts";
 import { startOutboxSenderLoop } from "../infrastructure/outbox/sender.ts";
@@ -27,7 +28,8 @@ startEventSubscriptions(eventStore, pool).catch(console.error);
 // Start the outbox sender loop (drains outbox_messages and delivers SMS)
 const outboxStore = createOutboxStore(pool);
 const smsClient = createSmsClient();
-const senders = buildChannelSenders(smsClient);
+const emailClient = createEmailClient();
+const senders = buildChannelSenders(smsClient, emailClient);
 const senderLoop = startOutboxSenderLoop({ store: outboxStore, pool, senders });
 
 const admins = await volunteerRepo.getAdmins();

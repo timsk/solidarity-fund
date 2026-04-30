@@ -7,6 +7,7 @@ export type OutboxRow = {
 	event_type: string;
 	channel: string;
 	recipient: string;
+	subject: string | null;
 	body: string;
 	status: string;
 	created_at: string;
@@ -65,6 +66,7 @@ export function outboxPage(
             </th>
             <th class="px-3 py-2 text-left font-heading text-xs uppercase tracking-wide text-bark-muted border-b border-cream-200 w-32">Time</th>
             <th class="px-3 py-2 text-left font-heading text-xs uppercase tracking-wide text-bark-muted border-b border-cream-200 w-24">Channel</th>
+            <th class="px-3 py-2 text-left font-heading text-xs uppercase tracking-wide text-bark-muted border-b border-cream-200 w-48">Subject</th>
             <th class="px-3 py-2 text-left font-heading text-xs uppercase tracking-wide text-bark-muted border-b border-cream-200 w-48">Recipient</th>
             <th class="px-3 py-2 text-left font-heading text-xs uppercase tracking-wide text-bark-muted border-b border-cream-200">Body</th>
             <th class="px-3 py-2 text-left font-heading text-xs uppercase tracking-wide text-bark-muted border-b border-cream-200 w-28">Status</th>
@@ -88,7 +90,7 @@ export function outboxPage(
 }
 
 function emptyRow(): string {
-	return `<tr><td colspan="8" class="px-3 py-8 text-center text-bark-muted text-sm">No messages yet.</td></tr>`;
+	return `<tr><td colspan="9" class="px-3 py-8 text-center text-bark-muted text-sm">No messages yet.</td></tr>`;
 }
 
 function renderRow(row: OutboxRow, page: number, statusVal: string): string {
@@ -104,6 +106,7 @@ function renderRow(row: OutboxRow, page: number, statusVal: string): string {
     <td class="px-2 py-2"><input type="checkbox" name="ids" value="${row.id}"></td>
     <td class="px-3 py-2 text-bark-muted whitespace-nowrap">${relativeTime(row.created_at)}</td>
     <td class="px-3 py-2 text-bark-light">${escapeHtml(row.channel)}</td>
+    <td class="px-3 py-2 text-bark-light">${escapeHtml(row.subject ?? "")}</td>
     <td class="px-3 py-2 text-bark-light">${escapeHtml(row.recipient)}</td>
     <td class="px-3 py-2 text-bark-light">${bodyPreview}</td>
     <td class="px-3 py-2"><span class="${statusBadge} inline-block text-xs px-2 py-1 rounded font-medium">${row.status}</span></td>

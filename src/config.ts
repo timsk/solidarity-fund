@@ -65,3 +65,37 @@ export function getSmsConfig(): SmsConfig {
 export function resetSmsConfig(): void {
 	_smsConfig = null;
 }
+
+let _emailConfig: EmailConfig | null = null;
+
+export type EmailConfig = {
+	enabled: boolean;
+	user: string;
+	appPassword: string;
+	fromName?: string;
+};
+
+export function getEmailConfig(): EmailConfig {
+	if (_emailConfig) return _emailConfig;
+
+	const enabled = process.env.EMAIL_ENABLED === "true";
+	const user = process.env.GMAIL_USER ?? "";
+	const appPassword = process.env.GMAIL_APP_PASSWORD ?? "";
+	const fromName = process.env.EMAIL_FROM_NAME || user || undefined;
+
+	if (enabled) {
+		if (!user || !appPassword) {
+			throw new Error(
+				"GMAIL_USER and GMAIL_APP_PASSWORD are required when EMAIL_ENABLED=true",
+			);
+		}
+		_emailConfig = { enabled: true, user, appPassword, fromName };
+	} else {
+		_emailConfig = { enabled: false, user, appPassword, fromName };
+	}
+	return _emailConfig;
+}
+
+export function resetEmailConfig(): void {
+	_emailConfig = null;
+}

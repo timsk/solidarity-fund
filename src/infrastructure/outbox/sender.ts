@@ -34,7 +34,11 @@ export function startOutboxSenderLoop(options: {
 				}
 
 				try {
-					const result = await sender.send(msg.recipient, msg.body);
+					const result = await sender.send(
+						msg.recipient,
+						msg.body,
+						msg.subject,
+					);
 					if (result.success) {
 						await options.store.markSent(conn, msg.id, result.messageId);
 					} else {

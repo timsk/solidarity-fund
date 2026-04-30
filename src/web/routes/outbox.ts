@@ -38,7 +38,7 @@ export function createOutboxRoutes(
 				const { rows, total, pages, page } = await pool.withConnection(
 					async (conn) => {
 						let countQuery = "SELECT COUNT(*) AS total FROM outbox_messages";
-						let dataQuery = `SELECT id, event_stream, event_position, event_type, channel, recipient, body, status, created_at, sent_at, error, message_id
+						let dataQuery = `SELECT id, event_stream, event_position, event_type, channel, recipient, subject, body, status, created_at, sent_at, error, message_id
                FROM outbox_messages`;
 
 						const params: (string | number)[] = [];

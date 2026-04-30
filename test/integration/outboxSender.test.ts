@@ -25,6 +25,7 @@ async function insertPendingMessage(
 			channel: "sms",
 			recipient: "+447777777777",
 			body: "Your application has been received.",
+			subject: undefined,
 			createdAt: new Date().toISOString(),
 			...overrides,
 		};
@@ -178,5 +179,57 @@ describe("Outbox Sender Loop", () => {
 		});
 
 		expect(() => stop()).not.toThrow();
+	});
+
+	it("dispatches email messages via email channel sender", async () => {
+		let emailSendCall:
+			| { recipient: string; body: string; subject?: string }
+			| undefined;
+		const fakeEmailSender: ChannelSender = {
+			send: async (recipient, body, subject) => {
+				emailSendCall = { recipient, body, subject };
+				return { success: true, messageId: "email-msg-456" };
+			},
+		};
+
+		const fakeSmsSender: ChannelSender = {
+			send: async () => ({ success: true, messageId: "sms-id" }),
+		};
+
+		const senders = new Map<string, ChannelSender>();
+		senders.set("sms", fakeSmsSender);
+		senders.set("email", fakeEmailSender);
+
+		await insertPendingMessage(pool, store, {
+			channel: "email",
+			recipient: "test@example.com",
+			body: "Your application status update",
+			subject: "Application Update",
+		});
+
+		const { stop } = startOutboxSenderLoop({
+			store,
+			pool,
+			senders,
+			intervalMs: 100,
+		});
+
+		await sleep(200);
+		stop();
+
+		expect(emailSendCall).toBeDefined();
+		expect(emailSendCall!.recipient).toBe("test@example.com");
+		expect(emailSendCall!.body).toBe("Your application status update");
+		expect(emailSendCall!.subject).toBe("Application Update");
+
+		const message = await pool.withConnection(async (conn) => {
+			const rows = await conn.query<{ status: string; message_id: string }>(
+				"SELECT status, message_id FROM outbox_messages WHERE id = 1",
+			);
+			return rows[0];
+		});
+
+		expect(message.status).toBe("sent");
+		expect(message.message_id).toBe("email-msg-456");
 	});
 });
