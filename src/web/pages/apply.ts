@@ -76,7 +76,7 @@ export function applyPage(closesAt: string): string {
 		"Apply",
 		`<div class="w-full max-w-md">
 	<div class="card p-8">
-		<h1 class="font-heading text-2xl font-bold text-bark mb-2 text-center">Apply for a grant of up to £40</h1>
+		<h1 class="font-heading text-2xl font-bold text-bark mb-2 text-center">Apply for a grant of £40</h1>
 		${countdownHtml}
 		<form action="/apply" method="POST" enctype="multipart/form-data" class="space-y-4" data-signals='{"paymentPref": "cash"}'>
 			<div>
