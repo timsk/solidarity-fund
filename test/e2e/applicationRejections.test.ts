@@ -403,7 +403,7 @@ test.describe("application rejections & edge cases", () => {
 
 		await expect(page).toHaveURL("/apply");
 		await expect(
-			page.locator("text=Apply for a grant of up to £40"),
+			page.locator("text=Apply for a grant of £40"),
 		).toBeVisible();
 	});
 
