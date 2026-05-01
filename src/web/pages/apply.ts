@@ -78,12 +78,12 @@ export function applyPage(closesAt: string): string {
 				<input type="text" id="name" name="name" required class="input" />
 			</div>
 			<div>
-				<label for="phone" class="block text-sm font-body text-bark mb-1">Phone</label>
-				<input type="tel" id="phone" name="phone" required class="input" />
-			</div>
-			<div>
 				<label for="email" class="block text-sm font-body text-bark mb-1">Email (optional)</label>
 				<input type="email" id="email" name="email" class="input" />
+			</div>
+			<div>
+				<label for="phone" class="block text-sm font-body text-bark mb-1">Phone</label>
+				<input type="tel" id="phone" name="phone" required class="input" />
 			</div>
 			<fieldset>
 				<legend class="block text-sm font-body text-bark mb-2">Payment Preference</legend>
