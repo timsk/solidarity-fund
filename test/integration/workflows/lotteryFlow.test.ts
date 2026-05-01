@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { CommandHandler } from "@event-driven-io/emmett";
 import { toApplicantId } from "../../../src/domain/application/applicantId.ts";
 import { checkEligibility } from "../../../src/domain/application/checkEligibility.ts";
 import type { ApplicationEvent } from "../../../src/domain/application/types.ts";
+import {
+	decide as lotteryDecide,
+	evolve as lotteryEvolve,
+	initialState as lotteryInitialState,
+} from "../../../src/domain/lottery/decider.ts";
+import type { LotteryEvent } from "../../../src/domain/lottery/types.ts";
 import { createTestEnv, type TestEnv } from "../helpers/testEventStore.ts";
 import {
 	closeWindow,
@@ -271,5 +278,52 @@ describe("lottery workflow", () => {
 
 		const apps = await queryApplications(env);
 		expect(apps[0]!.status).toBe("not_selected");
+	});
+
+	test("auto-closes expired lottery on next request check", async () => {
+		// Open an already-expired lottery (dates in 2020 ensure it's past)
+		const handle = CommandHandler<
+			ReturnType<typeof lotteryInitialState>,
+			LotteryEvent
+		>({
+			evolve: lotteryEvolve,
+			initialState: lotteryInitialState,
+		});
+
+		await handle(env.eventStore, "lottery-auto-close-test", (state) =>
+			lotteryDecide(
+				{
+					type: "OpenApplicationWindow",
+					data: {
+						monthCycle: "auto-close-test",
+						openedAt: "2020-01-01T00:00:00Z",
+						expectedClosingAt: "2020-01-01T00:00:01Z",
+					},
+				},
+				state,
+			),
+		);
+
+		const before = await env.pool.withConnection(async (conn) =>
+			conn.query<{ status: string }>(
+				"SELECT status FROM lottery_windows WHERE month_cycle = ? LIMIT 1",
+				["auto-close-test"],
+			),
+		);
+		expect(before[0]?.status).toBe("open");
+
+		const { autoCloseExpiredLottery } = await import(
+			"../../../src/web/routes/utils.ts"
+		);
+		const closed = await autoCloseExpiredLottery(env.pool, env.eventStore);
+		expect(closed).toBe(true);
+
+		const after = await env.pool.withConnection(async (conn) =>
+			conn.query<{ status: string }>(
+				"SELECT status FROM lottery_windows WHERE month_cycle = ? LIMIT 1",
+				["auto-close-test"],
+			),
+		);
+		expect(after[0]?.status).toBe("closed");
 	});
 });

@@ -146,7 +146,17 @@ export async function assignVolunteer(page: Page): Promise<void> {
 /** Open lottery window, optionally close it, optionally run draw */
 export async function openLotteryWindow(page: Page): Promise<void> {
 	await page.goto("/lottery");
-	await page.locator("button", { hasText: "Open Applications" }).click();
+	const closeDate = new Date(Date.now() + 30 * 86400000);
+	const yyyy = closeDate.getFullYear();
+	const mm = String(closeDate.getMonth() + 1).padStart(2, "0");
+	const dd = String(closeDate.getDate()).padStart(2, "0");
+	const hh = String(closeDate.getHours()).padStart(2, "0");
+	const min = String(closeDate.getMinutes()).padStart(2, "0");
+	const closingAt = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+	await page.request.post("/lottery/open", {
+		data: { lotteryname: "E2E Test", expectedclosing: closingAt },
+	});
+	await page.goto("/lottery");
 	await page.locator("text=Close Applications").waitFor({ timeout: 10000 });
 }
 

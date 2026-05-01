@@ -55,8 +55,21 @@ export function createLotteryRoutes(
 			});
 		},
 
-		async handleOpen(expectedClosingAt: string): Promise<Response> {
-			const monthCycle = await getCurrentLotteryMonthCycle(pool);
+		async handleOpen(
+			monthCycle: string,
+			expectedClosingAt: string,
+		): Promise<Response> {
+			const existingOpen = await pool.withConnection(async (conn) => {
+				const rows = await conn.query<{ month_cycle: string }>(
+					"SELECT month_cycle FROM lottery_windows WHERE status = 'open' LIMIT 1",
+				);
+				return rows.length > 0;
+			});
+			if (existingOpen) {
+				return new Response("A lottery is already open. Close it first.", {
+					status: 409,
+				});
+			}
 			await openApplicationWindow(monthCycle, expectedClosingAt, eventStore);
 			return sseResponse(patchElements(lotteryContent(monthCycle, "open")));
 		},

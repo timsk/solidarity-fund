@@ -5,7 +5,18 @@ describe("lotteryPage", () => {
 	test("initial state shows Open button", () => {
 		const html = lotteryPage("2026-03", "initial");
 		expect(html).toContain("Open Applications");
-		expect(html).toContain("No window open");
+		expect(html).toContain("No active lottery");
+	});
+
+	test("initial state shows lottery name input", () => {
+		const html = lotteryPage("test-lottery", "initial");
+		expect(html).toContain('id="lotteryName"');
+		expect(html).toContain("lotteryname");
+	});
+
+	test("initial state copy mentions 'start one'", () => {
+		const html = lotteryPage("2026-03", "initial");
+		expect(html).toContain("No active lottery");
 	});
 
 	test("open state shows Close button", () => {

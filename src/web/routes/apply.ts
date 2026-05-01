@@ -16,6 +16,7 @@ import type { PaymentPreference } from "../../domain/application/types.ts";
 import type { DocumentStore } from "../../infrastructure/projections/documents.ts";
 import { applyClosedPage, applyPage } from "../pages/apply.ts";
 import {
+	autoCloseExpiredLottery,
 	getCurrentLotteryMonthCycle,
 	getLotteryClosingTimestamp,
 } from "./utils.ts";
@@ -55,6 +56,7 @@ export function createApplyRoutes(
 ) {
 	return {
 		async showForm(): Promise<Response> {
+			await autoCloseExpiredLottery(pool, eventStore);
 			const monthCycle = await getCurrentLotteryMonthCycle(pool);
 			const open = await isWindowOpen(monthCycle, pool);
 			const closesAt = await getLotteryClosingTimestamp(pool);
@@ -65,6 +67,7 @@ export function createApplyRoutes(
 		},
 
 		async handleSubmit(req: Request): Promise<Response> {
+			await autoCloseExpiredLottery(pool, eventStore);
 			const formData = await req.formData();
 			const name = String(formData.get("name") ?? "").trim();
 			const phone = String(formData.get("phone") ?? "").trim();

@@ -32,6 +32,7 @@ import { createLogsRoutes } from "./routes/logs.ts";
 import { createLotteryRoutes } from "./routes/lottery.ts";
 import { createOutboxRoutes } from "./routes/outbox.ts";
 import { createStatusRoutes } from "./routes/status.ts";
+import { autoCloseExpiredLottery, currentMonthCycle } from "./routes/utils.ts";
 import { createVolunteerRoutes } from "./routes/volunteers.ts";
 
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -189,7 +190,7 @@ export async function startServer(
 		return getAuthenticatedVolunteer(req, sessionStore, volunteerRepo);
 	}
 
-	return Bun.serve({
+	const server = Bun.serve({
 		port,
 		...(tlsCert && tlsKey
 			? { tls: { cert: Bun.file(tlsCert), key: Bun.file(tlsKey) } }
@@ -459,15 +460,6 @@ export async function startServer(
 				return volunteerRoutes.handleCreate(req, volunteer.id);
 			}
 
-			const volHistoryMatch = url.pathname.match(
-				/^\/volunteers\/([^/]+)\/history$/,
-			);
-			if (volHistoryMatch?.[1] && req.method === "GET") {
-				if (!volunteer.isAdmin)
-					return new Response("Forbidden", { status: 403 });
-				return volunteerRoutes.history(volHistoryMatch[1]);
-			}
-
 			const volEditMatch = url.pathname.match(/^\/volunteers\/([^/]+)\/edit$/);
 			if (volEditMatch?.[1] && req.method === "GET") {
 				if (!volunteer.isAdmin)
@@ -687,7 +679,9 @@ export async function startServer(
 						status: 400,
 					});
 				}
-				return lotteryRoutes.handleOpen(expectedClosing);
+				const lotteryName =
+					String(signals.lotteryname ?? "").trim() || currentMonthCycle();
+				return lotteryRoutes.handleOpen(lotteryName, expectedClosing);
 			}
 			if (url.pathname === "/lottery/close" && req.method === "POST") {
 				return lotteryRoutes.handleClose();
@@ -705,13 +699,6 @@ export async function startServer(
 
 			if (url.pathname === "/applicants" && req.method === "POST") {
 				return applicantRoutes.handleCreate(req, volunteer.id);
-			}
-
-			const historyMatch = url.pathname.match(
-				/^\/applicants\/([^/]+)\/history$/,
-			);
-			if (historyMatch?.[1] && req.method === "GET") {
-				return applicantRoutes.history(decodeURIComponent(historyMatch[1]));
 			}
 
 			const editMatch = url.pathname.match(/^\/applicants\/([^/]+)\/edit$/);
@@ -743,4 +730,14 @@ export async function startServer(
 			return withSecurityHeaders(new Response("Not found", { status: 404 }));
 		},
 	});
+
+	Bun.cron("* * * * *", async () => {
+		try {
+			await autoCloseExpiredLottery(pool, eventStore);
+		} catch (_) {
+			// Silently ignore — next tick will retry
+		}
+	});
+
+	return server;
 }

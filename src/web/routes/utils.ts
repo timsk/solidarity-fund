@@ -1,4 +1,8 @@
-import type { SQLiteConnectionPool } from "@event-driven-io/emmett-sqlite";
+import type {
+	SQLiteConnectionPool,
+	SQLiteEventStore,
+} from "@event-driven-io/emmett-sqlite";
+import { closeApplicationWindow } from "../../domain/lottery/commandHandlers.ts";
 
 export function currentMonthCycle(): string {
 	const now = new Date();
@@ -39,5 +43,43 @@ export async function getLotteryClosingTimestamp(
 		});
 	} catch {
 		return null;
+	}
+}
+
+export async function getOpenLottery(
+	pool: ReturnType<typeof SQLiteConnectionPool>,
+): Promise<{ month_cycle: string; expected_closing_at: string } | null> {
+	try {
+		return await pool.withConnection(async (conn) => {
+			const rows = await conn.query<{
+				month_cycle: string;
+				expected_closing_at: string;
+			}>(
+				"SELECT month_cycle, expected_closing_at FROM lottery_windows WHERE status = 'open' ORDER BY month_cycle DESC LIMIT 1",
+			);
+			return rows[0] ?? null;
+		});
+	} catch {
+		return null;
+	}
+}
+
+export async function autoCloseExpiredLottery(
+	pool: ReturnType<typeof SQLiteConnectionPool>,
+	eventStore: SQLiteEventStore,
+	closeFn: typeof closeApplicationWindow = closeApplicationWindow,
+): Promise<boolean> {
+	try {
+		const open = await getOpenLottery(pool);
+		if (!open) return false;
+
+		if (open.expected_closing_at <= new Date().toISOString()) {
+			await closeFn(open.month_cycle, eventStore);
+			return true;
+		}
+
+		return false;
+	} catch {
+		return false;
 	}
 }
