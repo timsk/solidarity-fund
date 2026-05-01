@@ -10,6 +10,7 @@ export const applicationsProjection = sqliteProjection<ApplicationEvent>({
 		"ApplicationFlaggedForReview",
 		"ApplicationSelected",
 		"ApplicationNotSelected",
+		"ApplicationLotteryCancelled",
 		"ApplicationReviewReverted",
 	],
 
@@ -115,6 +116,12 @@ export const applicationsProjection = sqliteProjection<ApplicationEvent>({
 				case "ApplicationNotSelected":
 					await connection.command(
 						"UPDATE applications SET status = 'not_selected' WHERE id = ?",
+						[data.applicationId],
+					);
+					break;
+				case "ApplicationLotteryCancelled":
+					await connection.command(
+						"UPDATE applications SET status = 'cancelled', rank = NULL, selected_at = NULL WHERE id = ?",
 						[data.applicationId],
 					);
 					break;

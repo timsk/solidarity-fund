@@ -4,12 +4,16 @@ import { toApplicantId } from "../../../src/domain/application/applicantId.ts";
 import { submitApplication } from "../../../src/domain/application/submitApplication.ts";
 import type { ApplicationEvent } from "../../../src/domain/application/types.ts";
 import { processApplicationSelected } from "../../../src/domain/grant/processManager.ts";
+import { cancelLottery } from "../../../src/domain/lottery/commandHandlers.ts";
 import {
 	decide as lotteryDecide,
 	evolve as lotteryEvolve,
 	initialState as lotteryInitialState,
 } from "../../../src/domain/lottery/decider.ts";
-import { processLotteryDrawn } from "../../../src/domain/lottery/processManager.ts";
+import {
+	processLotteryCancelled,
+	processLotteryDrawn,
+} from "../../../src/domain/lottery/processManager.ts";
 import type { LotteryEvent } from "../../../src/domain/lottery/types.ts";
 import type { TestEnv } from "./testEventStore.ts";
 
@@ -123,6 +127,22 @@ export async function processDrawResults(
 	drawnEvent: LotteryEvent,
 ) {
 	await processLotteryDrawn(drawnEvent, env.eventStore);
+}
+
+export async function cancelLotteryWindow(
+	env: TestEnv,
+	monthCycle: string,
+	applicationIds: string[],
+) {
+	await cancelLottery(monthCycle, env.eventStore);
+	const { events } = await env.eventStore.readStream(`lottery-${monthCycle}`);
+	const cancelled = events.find((e) => e.type === "LotteryCancelled");
+	if (!cancelled) {
+		throw new Error(
+			`LotteryCancelled event not found for stream lottery-${monthCycle}`,
+		);
+	}
+	await processLotteryCancelled(cancelled, env.eventStore, applicationIds);
 }
 
 export async function createGrantFromSelection(

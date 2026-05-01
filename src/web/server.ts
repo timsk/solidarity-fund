@@ -688,6 +688,9 @@ export async function startServer(
 			if (url.pathname === "/lottery/close" && req.method === "POST") {
 				return lotteryRoutes.handleClose();
 			}
+			if (url.pathname === "/lottery/cancel" && req.method === "POST") {
+				return lotteryRoutes.handleCancel();
+			}
 			if (url.pathname === "/lottery/draw" && req.method === "POST") {
 				const signals = await req.json();
 				const balance = Number(signals.availablebalance);

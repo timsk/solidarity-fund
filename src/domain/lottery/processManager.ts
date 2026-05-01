@@ -1,8 +1,11 @@
 import { CommandHandler, IllegalStateError } from "@event-driven-io/emmett";
 import type { SQLiteEventStore } from "@event-driven-io/emmett-sqlite";
 import { decide, evolve, initialState } from "../application/decider.ts";
-import type { ApplicationEvent } from "../application/types.ts";
-import type { LotteryDrawn } from "./types.ts";
+import type {
+	ApplicationEvent,
+	CancelApplicationDueToLottery,
+} from "../application/types.ts";
+import type { LotteryCancelled, LotteryDrawn } from "./types.ts";
 
 const handle = CommandHandler<
 	ReturnType<typeof initialState>,
@@ -48,6 +51,33 @@ export async function processLotteryDrawn(
 							rejectedAt: event.data.drawnAt,
 						},
 					},
+					state,
+				),
+			);
+		} catch (e) {
+			if (!(e instanceof IllegalStateError)) throw e;
+		}
+	}
+}
+
+export async function processLotteryCancelled(
+	event: LotteryCancelled,
+	eventStore: SQLiteEventStore,
+	applicationIds: string[],
+): Promise<void> {
+	for (const applicationId of applicationIds) {
+		const streamId = `application-${applicationId}`;
+		try {
+			await handle(eventStore, streamId, (state) =>
+				decide(
+					{
+						type: "ApplicationLotteryCancelled",
+						data: {
+							applicationId,
+							lotteryMonthCycle: event.data.monthCycle,
+							cancelledAt: event.data.cancelledAt,
+						},
+					} as unknown as CancelApplicationDueToLottery,
 					state,
 				),
 			);

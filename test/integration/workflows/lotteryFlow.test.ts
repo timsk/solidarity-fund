@@ -11,6 +11,7 @@ import {
 import type { LotteryEvent } from "../../../src/domain/lottery/types.ts";
 import { createTestEnv, type TestEnv } from "../helpers/testEventStore.ts";
 import {
+	cancelLotteryWindow,
 	closeWindow,
 	drawLottery,
 	openWindow,
@@ -325,5 +326,79 @@ describe("lottery workflow", () => {
 			),
 		);
 		expect(after[0]?.status).toBe("closed");
+	});
+
+	test("cancel active lottery clears all accepted/confirmed applications", async () => {
+		const applicants = [
+			{ id: "app-1", phone: "07700900001", name: "Alice" },
+			{ id: "app-2", phone: "07700900002", name: "Bob" },
+			{ id: "app-3", phone: "07700900003", name: "Charlie" },
+		];
+
+		for (const a of applicants) {
+			await submitAcceptedApplication(env, {
+				applicationId: a.id,
+				phone: a.phone,
+				name: a.name,
+				monthCycle: "2026-03",
+			});
+		}
+
+		await openWindow(env, "2026-03");
+
+		await cancelLotteryWindow(env, "2026-03", ["app-1", "app-2", "app-3"]);
+
+		const windows = await env.pool.withConnection(async (conn) =>
+			conn.query<{ status: string }>(
+				"SELECT status FROM lottery_windows WHERE month_cycle = ?",
+				["2026-03"],
+			),
+		);
+		expect(windows[0]?.status).toBe("cancelled");
+
+		const apps = await queryApplications(env);
+		const cancelledApps = apps.filter((a) => a.status === "cancelled");
+		expect(cancelledApps).toHaveLength(3);
+		for (const app of cancelledApps) {
+			expect(app.rank).toBeNull();
+			expect(app.selected_at).toBeNull();
+		}
+	});
+
+	test("cancel closed-but-not-drawn lottery", async () => {
+		const applicants = [
+			{ id: "app-1", phone: "07700900001", name: "Alice" },
+			{ id: "app-2", phone: "07700900002", name: "Bob" },
+		];
+
+		for (const a of applicants) {
+			await submitAcceptedApplication(env, {
+				applicationId: a.id,
+				phone: a.phone,
+				name: a.name,
+				monthCycle: "2026-04",
+			});
+		}
+
+		await openWindow(env, "2026-04");
+		await closeWindow(env, "2026-04");
+
+		await cancelLotteryWindow(env, "2026-04", ["app-1", "app-2"]);
+
+		const windows = await env.pool.withConnection(async (conn) =>
+			conn.query<{ status: string }>(
+				"SELECT status FROM lottery_windows WHERE month_cycle = ?",
+				["2026-04"],
+			),
+		);
+		expect(windows[0]?.status).toBe("cancelled");
+
+		const apps = await queryApplications(env);
+		const cancelledApps = apps.filter((a) => a.status === "cancelled");
+		expect(cancelledApps).toHaveLength(2);
+		for (const app of cancelledApps) {
+			expect(app.rank).toBeNull();
+			expect(app.selected_at).toBeNull();
+		}
 	});
 });

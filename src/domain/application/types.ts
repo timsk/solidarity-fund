@@ -79,6 +79,15 @@ export type RejectFromLottery = Command<
 	}
 >;
 
+export type CancelApplicationDueToLottery = Command<
+	"ApplicationLotteryCancelled",
+	{
+		applicationId: string;
+		lotteryMonthCycle: string;
+		cancelledAt: string;
+	}
+>;
+
 export type RevertReviewApplication = Command<
 	"RevertReviewApplication",
 	{
@@ -170,6 +179,16 @@ export type ApplicationNotSelected = Event<
 	}
 >;
 
+export type ApplicationLotteryCancelled = Event<
+	"ApplicationLotteryCancelled",
+	{
+		applicationId: string;
+		lotteryMonthCycle: string;
+		previousStatus: string;
+		cancelledAt: string;
+	}
+>;
+
 export type ApplicationReviewReverted = Event<
 	"ApplicationReviewReverted",
 	{
@@ -182,6 +201,14 @@ export type ApplicationReviewReverted = Event<
 	}
 >;
 
+export type ApplicationCommand =
+	| SubmitApplication
+	| ReviewApplication
+	| SelectApplication
+	| RejectFromLottery
+	| CancelApplicationDueToLottery
+	| RevertReviewApplication;
+
 export type ApplicationEvent =
 	| ApplicationSubmitted
 	| ApplicationAccepted
@@ -190,6 +217,7 @@ export type ApplicationEvent =
 	| ApplicationFlaggedForReview
 	| ApplicationSelected
 	| ApplicationNotSelected
+	| ApplicationLotteryCancelled
 	| ApplicationReviewReverted;
 
 export type ApplicationEventType = ApplicationEvent["type"];
@@ -241,4 +269,8 @@ export type ApplicationState =
 			applicationId: string;
 			applicantId: string;
 			monthCycle: string;
+	  }
+	| {
+			status: "cancelled";
+			applicationId: string;
 	  };

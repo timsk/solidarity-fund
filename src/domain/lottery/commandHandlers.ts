@@ -45,6 +45,22 @@ export async function closeApplicationWindow(
 	);
 }
 
+export async function cancelLottery(
+	monthCycle: string,
+	eventStore: EventStore,
+): Promise<void> {
+	const now = new Date().toISOString();
+	await handle(eventStore, streamId(monthCycle), (state) =>
+		decide(
+			{
+				type: "CancelLottery",
+				data: { monthCycle, cancelledAt: now },
+			},
+			state,
+		),
+	);
+}
+
 export async function drawLottery(
 	monthCycle: string,
 	volunteerId: string,

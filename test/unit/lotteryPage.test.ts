@@ -38,4 +38,25 @@ describe("lotteryPage", () => {
 		expect(html).toContain("/applications?month=2026-03");
 		expect(html).toContain("Lottery drawn");
 	});
+
+	test("cancelled state shows cancelled message", () => {
+		const html = lotteryPage("2026-03", "cancelled");
+		expect(html.toLowerCase()).toContain("cancelled");
+		expect(html).toContain("Back to Dashboard");
+	});
+
+	test("open state shows Cancel Lottery button", () => {
+		const html = lotteryPage("2026-03", "open");
+		expect(html).toContain("Cancel Lottery");
+	});
+
+	test("open state shows confirmation signal", () => {
+		const html = lotteryPage("2026-03", "open");
+		expect(html.toLowerCase()).toContain("confirmcancel");
+	});
+
+	test("open state shows Close Applications button", () => {
+		const html = lotteryPage("2026-03", "open");
+		expect(html).toContain("Close Applications");
+	});
 });

@@ -3,6 +3,7 @@ import { toApplicantId } from "./applicantId.ts";
 import type {
 	ApplicationEvent,
 	ApplicationState,
+	CancelApplicationDueToLottery,
 	IdentityResolution,
 	RejectFromLottery,
 	RevertReviewApplication,
@@ -16,6 +17,7 @@ export type ApplicationCommand =
 	| ReviewApplication
 	| SelectApplication
 	| RejectFromLottery
+	| CancelApplicationDueToLottery
 	| RevertReviewApplication;
 
 export const initialState = (): ApplicationState => ({ status: "initial" });
@@ -46,6 +48,11 @@ export function decide(
 			return decideSelect(command, state);
 		case "RejectFromLottery":
 			return decideRejectFromLottery(command, state);
+		case "ApplicationLotteryCancelled":
+			return decideCancelDueToLottery(
+				command as unknown as CancelApplicationDueToLottery,
+				state,
+			);
 		case "RevertReviewApplication":
 			return decideRevertReview(command, state);
 	}
@@ -256,6 +263,32 @@ function decideRejectFromLottery(
 	];
 }
 
+function decideCancelDueToLottery(
+	command: CancelApplicationDueToLottery,
+	state: ApplicationState,
+): ApplicationEvent[] {
+	if (
+		state.status !== "accepted" &&
+		state.status !== "confirmed" &&
+		state.status !== "flagged"
+	) {
+		throw new IllegalStateError(
+			`Cannot cancel application due to lottery cancellation in ${state.status} state`,
+		);
+	}
+	return [
+		{
+			type: "ApplicationLotteryCancelled",
+			data: {
+				applicationId: state.applicationId,
+				lotteryMonthCycle: command.data.lotteryMonthCycle,
+				previousStatus: state.status,
+				cancelledAt: command.data.cancelledAt,
+			},
+		},
+	];
+}
+
 function decideRevertReview(
 	command: RevertReviewApplication,
 	state: ApplicationState,
@@ -339,6 +372,11 @@ export function evolve(
 				applicationId: event.data.applicationId,
 				applicantId: event.data.applicantId,
 				monthCycle: event.data.monthCycle,
+			};
+		case "ApplicationLotteryCancelled":
+			return {
+				status: "cancelled",
+				applicationId: event.data.applicationId,
 			};
 		case "ApplicationReviewReverted":
 			return {

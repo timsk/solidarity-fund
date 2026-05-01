@@ -6,12 +6,19 @@ import type { ApplicationRepository } from "../../domain/application/repository.
 import type { ApplicationSelected } from "../../domain/application/types.ts";
 import { processApplicationSelected } from "../../domain/grant/processManager.ts";
 import {
+	cancelLottery,
 	closeApplicationWindow,
 	drawLottery,
 	openApplicationWindow,
 } from "../../domain/lottery/commandHandlers.ts";
-import { processLotteryDrawn } from "../../domain/lottery/processManager.ts";
-import type { LotteryDrawn } from "../../domain/lottery/types.ts";
+import {
+	processLotteryCancelled,
+	processLotteryDrawn,
+} from "../../domain/lottery/processManager.ts";
+import type {
+	LotteryCancelled,
+	LotteryDrawn,
+} from "../../domain/lottery/types.ts";
 import { lotteryContent, lotteryPage } from "../pages/lottery.ts";
 import { patchElements, redirectTo, sseResponse } from "../sse.ts";
 import { getCurrentLotteryMonthCycle } from "./utils.ts";
@@ -130,6 +137,38 @@ export function createLotteryRoutes(
 			}
 
 			return sseResponse(redirectTo(`/applications?month=${monthCycle}`));
+		},
+
+		async handleCancel(): Promise<Response> {
+			const monthCycle = await getCurrentLotteryMonthCycle(pool);
+			const applications = await appRepo.listByMonth(monthCycle);
+			const applicationIds = applications
+				.filter(
+					(a) =>
+						a.status === "accepted" ||
+						a.status === "confirmed" ||
+						a.status === "flagged",
+				)
+				.map((a) => a.id);
+
+			await cancelLottery(monthCycle, eventStore);
+
+			// Read back the LotteryCancelled event to feed the process manager
+			const stream = await eventStore.readStream(`lottery-${monthCycle}`);
+			const cancelledEvent = stream.events.findLast(
+				(e) => e.type === "LotteryCancelled",
+			) as LotteryCancelled | undefined;
+			if (cancelledEvent) {
+				await processLotteryCancelled(
+					cancelledEvent,
+					eventStore,
+					applicationIds,
+				);
+			}
+
+			return sseResponse(
+				patchElements(lotteryContent(monthCycle, "cancelled")),
+			);
 		},
 	};
 }

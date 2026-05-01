@@ -1,6 +1,11 @@
 import { layout } from "./layout.ts";
 
-type LotteryStatus = "initial" | "open" | "windowClosed" | "drawn";
+type LotteryStatus =
+	| "initial"
+	| "open"
+	| "windowClosed"
+	| "drawn"
+	| "cancelled";
 
 function escapeHtml(s: string): string {
 	return s
@@ -16,12 +21,14 @@ function statusBadge(status: LotteryStatus): string {
 		open: "bg-green-50 text-green-700 border-green-200",
 		windowClosed: "bg-amber-50 text-amber-700 border-amber-200",
 		drawn: "bg-blue-50 text-blue-700 border-blue-200",
+		cancelled: "bg-red-50 text-red-700 border-red-200",
 	};
 	const labels: Record<LotteryStatus, string> = {
 		initial: "No Window",
 		open: "Applications Open",
 		windowClosed: "Window Closed",
 		drawn: "Drawn",
+		cancelled: "Cancelled",
 	};
 	return `<span class="badge ${styles[status]}">${labels[status]}</span>`;
 }
@@ -44,7 +51,15 @@ function actionSection(month: string, status: LotteryStatus): string {
 				</form>`;
 		case "open":
 			return `<p class="text-bark-muted mb-4">Applications open for ${escapeHtml(month)}.</p>
-				<button class="btn btn-primary" data-on:click="@post('/lottery/close')">Close Applications</button>`;
+			<div class="flex gap-3" data-signals="{confirmCancel: false}">
+				<button class="btn btn-primary" data-on:click="@post('/lottery/close')">Close Applications</button>
+				<button type="button" class="btn btn-secondary" data-show="!$confirmCancel" data-on:click="$confirmCancel = true">Cancel Lottery</button>
+				<span data-show="$confirmCancel" class="flex items-center gap-2" style="display:none">
+					<span class="text-sm text-red-700 font-semibold">This will delete all applications!</span>
+					<button type="button" class="btn btn-danger" data-on:click="@post('/lottery/cancel')">Cancel Lottery</button>
+					<button type="button" class="btn btn-secondary" data-on:click="$confirmCancel = false">Keep</button>
+				</span>
+			</div>`;
 		case "windowClosed":
 			return `<p class="text-bark-muted mb-4">Window closed for ${escapeHtml(month)}. Ready to draw.</p>
 				<form data-on:submit="@post('/lottery/draw')" class="space-y-4 max-w-sm">
@@ -64,12 +79,15 @@ function actionSection(month: string, status: LotteryStatus): string {
 				</form>`;
 		case "drawn":
 			return `<p class="text-bark-muted mb-4">Lottery drawn for ${escapeHtml(month)}.</p>
-				<a href="/applications?month=${encodeURIComponent(month)}" class="btn btn-primary no-underline">View Results</a>`;
+			<a href="/applications?month=${encodeURIComponent(month)}" class="btn btn-primary no-underline">View Results</a>`;
+		case "cancelled":
+			return `<p class="text-bark-muted mb-4">Lottery cancelled for ${escapeHtml(month)}.</p>
+			<a href="/" class="btn btn-primary no-underline">Back to Dashboard</a>`;
 	}
 }
 
 export function lotteryPage(monthCycle: string, status: LotteryStatus): string {
-	const body = `<div class="max-w-2xl mx-auto px-4 py-8" data-signals='{"availablebalance": "", "reserve": "", "grantamount": "", "expectedclosing": "", "lotteryname": ""}'>
+	const body = `<div class="max-w-2xl mx-auto px-4 py-8" data-signals='{"availablebalance": "", "reserve": "", "grantamount": "", "expectedclosing": "", "lotteryname": "", "confirmcancel": false}'>
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-3">
 			<a href="/" class="text-bark-muted hover:text-bark transition-colors text-sm">&larr; Back</a>

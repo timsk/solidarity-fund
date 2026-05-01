@@ -5,6 +5,7 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 	canHandle: [
 		"ApplicationWindowOpened",
 		"ApplicationWindowClosed",
+		"LotteryCancelled",
 		"LotteryDrawn",
 	],
 
@@ -38,6 +39,12 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 				case "ApplicationWindowClosed":
 					await connection.command(
 						`UPDATE lottery_windows SET status = 'closed' WHERE month_cycle = ?`,
+						[data.monthCycle],
+					);
+					break;
+				case "LotteryCancelled":
+					await connection.command(
+						`UPDATE lottery_windows SET status = 'cancelled' WHERE month_cycle = ?`,
 						[data.monthCycle],
 					);
 					break;

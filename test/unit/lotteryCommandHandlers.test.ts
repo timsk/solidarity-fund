@@ -4,6 +4,7 @@ import {
 	getInMemoryEventStore,
 } from "@event-driven-io/emmett";
 import {
+	cancelLottery,
 	closeApplicationWindow,
 	drawLottery,
 	openApplicationWindow,
@@ -49,5 +50,24 @@ describe("lottery command handlers", () => {
 		const stream = await eventStore.readStream("lottery-2026-03");
 		expect(stream.events).toHaveLength(3);
 		expect(stream.events[2]!.type).toBe("LotteryDrawn");
+	});
+
+	test("cancelLottery appends LotteryCancelled", async () => {
+		await openApplicationWindow("2026-03", "2026-03-31T23:59:00Z", eventStore);
+		await cancelLottery("2026-03", eventStore);
+		const stream = await eventStore.readStream("lottery-2026-03");
+		expect(stream.events).toHaveLength(2);
+		expect(stream.events[1]!.type).toBe("LotteryCancelled");
+		expect(stream.events[1]!.data.previousStatus).toBe("open");
+	});
+
+	test("cancelLottery from windowClosed works", async () => {
+		await openApplicationWindow("2026-03", "2026-03-31T23:59:00Z", eventStore);
+		await closeApplicationWindow("2026-03", eventStore);
+		await cancelLottery("2026-03", eventStore);
+		const stream = await eventStore.readStream("lottery-2026-03");
+		expect(stream.events).toHaveLength(3);
+		expect(stream.events[2]!.type).toBe("LotteryCancelled");
+		expect(stream.events[2]!.data.previousStatus).toBe("windowClosed");
 	});
 });

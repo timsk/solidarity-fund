@@ -1,6 +1,7 @@
 import { IllegalStateError } from "@event-driven-io/emmett";
 import { seededShuffle } from "./seededShuffle.ts";
 import type {
+	CancelLottery,
 	CloseApplicationWindow,
 	DrawLottery,
 	LotteryCommand,
@@ -20,6 +21,8 @@ export function decide(
 			return decideOpen(command, state);
 		case "CloseApplicationWindow":
 			return decideClose(command, state);
+		case "CancelLottery":
+			return decideCancel(command, state);
 		case "DrawLottery":
 			return decideDraw(command, state);
 	}
@@ -57,6 +60,27 @@ function decideClose(
 			data: {
 				monthCycle: command.data.monthCycle,
 				closedAt: command.data.closedAt,
+			},
+		},
+	];
+}
+
+function decideCancel(
+	command: CancelLottery,
+	state: LotteryState,
+): LotteryEvent[] {
+	if (state.status !== "open" && state.status !== "windowClosed") {
+		throw new IllegalStateError(
+			`Cannot cancel lottery in ${state.status} state`,
+		);
+	}
+	return [
+		{
+			type: "LotteryCancelled",
+			data: {
+				monthCycle: command.data.monthCycle,
+				previousStatus: state.status,
+				cancelledAt: command.data.cancelledAt,
 			},
 		},
 	];
@@ -111,6 +135,11 @@ export function evolve(state: LotteryState, event: LotteryEvent): LotteryState {
 		case "ApplicationWindowClosed":
 			return {
 				status: "windowClosed",
+				monthCycle: event.data.monthCycle,
+			};
+		case "LotteryCancelled":
+			return {
+				status: "cancelled",
 				monthCycle: event.data.monthCycle,
 			};
 		case "LotteryDrawn":

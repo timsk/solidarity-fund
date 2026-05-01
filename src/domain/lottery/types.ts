@@ -30,6 +30,14 @@ export type CloseApplicationWindow = Command<
 	}
 >;
 
+export type CancelLottery = Command<
+	"CancelLottery",
+	{
+		monthCycle: string;
+		cancelledAt: string;
+	}
+>;
+
 export type DrawLottery = Command<
 	"DrawLottery",
 	{
@@ -47,6 +55,7 @@ export type DrawLottery = Command<
 export type LotteryCommand =
 	| OpenApplicationWindow
 	| CloseApplicationWindow
+	| CancelLottery
 	| DrawLottery;
 
 // Events
@@ -65,6 +74,15 @@ export type ApplicationWindowClosed = Event<
 	{
 		monthCycle: string;
 		closedAt: string;
+	}
+>;
+
+export type LotteryCancelled = Event<
+	"LotteryCancelled",
+	{
+		monthCycle: string;
+		previousStatus: string;
+		cancelledAt: string;
 	}
 >;
 
@@ -87,6 +105,7 @@ export type LotteryDrawn = Event<
 export type LotteryEvent =
 	| ApplicationWindowOpened
 	| ApplicationWindowClosed
+	| LotteryCancelled
 	| LotteryDrawn;
 
 type LotteryEventType = LotteryEvent["type"];
@@ -97,6 +116,7 @@ export type LotteryState =
 	| { status: "initial" }
 	| { status: "open"; monthCycle: string; expectedClosingAt: string }
 	| { status: "windowClosed"; monthCycle: string }
+	| { status: "cancelled"; monthCycle: string }
 	| {
 			status: "drawn";
 			monthCycle: string;

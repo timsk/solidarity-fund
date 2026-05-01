@@ -6,6 +6,7 @@ import {
 	initialState,
 } from "../../src/domain/lottery/decider.ts";
 import type {
+	CancelLottery,
 	CloseApplicationWindow,
 	DrawLottery,
 	LotteryApplicant,
@@ -54,6 +55,13 @@ function drawCommand(
 			drawnAt: "2026-04-01T10:00:00Z",
 			...overrides,
 		},
+	};
+}
+
+function cancelCommand(monthCycle = "2026-03"): CancelLottery {
+	return {
+		type: "CancelLottery",
+		data: { monthCycle, cancelledAt: "2026-03-15T12:00:00Z" },
 	};
 }
 
@@ -115,6 +123,79 @@ describe("lottery decider", () => {
 				data: { monthCycle: "2026-03", closedAt: "2026-03-31T23:59:59Z" },
 			});
 			expect(() => decide(closeCommand(), state)).toThrow(IllegalStateError);
+		});
+	});
+
+	describe("CancelLottery", () => {
+		test("open → LotteryCancelled", () => {
+			const state = evolve(initialState(), {
+				type: "ApplicationWindowOpened",
+				data: {
+					monthCycle: "2026-03",
+					openedAt: "2026-03-01T00:00:00Z",
+					expectedClosingAt: "2026-03-31T23:59:59Z",
+				},
+			});
+			const events = decide(cancelCommand(), state);
+			expect(events).toHaveLength(1);
+			expect(events[0]!.type).toBe("LotteryCancelled");
+			expect(events[0]!.data.monthCycle).toBe("2026-03");
+			expect(events[0]!.data.previousStatus).toBe("open");
+		});
+
+		test("windowClosed → LotteryCancelled", () => {
+			let state = evolve(initialState(), {
+				type: "ApplicationWindowOpened",
+				data: {
+					monthCycle: "2026-03",
+					openedAt: "2026-03-01T00:00:00Z",
+					expectedClosingAt: "2026-03-31T23:59:59Z",
+				},
+			});
+			state = evolve(state, {
+				type: "ApplicationWindowClosed",
+				data: { monthCycle: "2026-03", closedAt: "2026-03-31T23:59:59Z" },
+			});
+			const events = decide(cancelCommand(), state);
+			expect(events).toHaveLength(1);
+			expect(events[0]!.type).toBe("LotteryCancelled");
+			expect(events[0]!.data.previousStatus).toBe("windowClosed");
+		});
+
+		test("cannot cancel from initial state", () => {
+			expect(() => decide(cancelCommand(), initialState())).toThrow(
+				IllegalStateError,
+			);
+		});
+
+		test("cannot cancel from drawn state", () => {
+			const state: LotteryState = {
+				status: "drawn",
+				monthCycle: "2026-03",
+				selected: [],
+				notSelected: [],
+			};
+			expect(() => decide(cancelCommand(), state)).toThrow(IllegalStateError);
+		});
+
+		test("cannot cancel from cancelled state", () => {
+			let state = evolve(initialState(), {
+				type: "ApplicationWindowOpened",
+				data: {
+					monthCycle: "2026-03",
+					openedAt: "2026-03-01T00:00:00Z",
+					expectedClosingAt: "2026-03-31T23:59:59Z",
+				},
+			});
+			state = evolve(state, {
+				type: "LotteryCancelled",
+				data: {
+					monthCycle: "2026-03",
+					previousStatus: "open",
+					cancelledAt: "2026-03-15T12:00:00Z",
+				},
+			});
+			expect(() => decide(cancelCommand(), state)).toThrow(IllegalStateError);
 		});
 	});
 
@@ -274,6 +355,24 @@ describe("lottery decider", () => {
 				},
 			);
 			expect(state.status).toBe("drawn");
+		});
+
+		test("LotteryCancelled → cancelled", () => {
+			const state = evolve(
+				{ status: "open", monthCycle: "2026-03", expectedClosingAt: "2026-03-31T23:59:59Z" },
+				{
+					type: "LotteryCancelled",
+					data: {
+						monthCycle: "2026-03",
+						previousStatus: "open",
+						cancelledAt: "2026-03-15T12:00:00Z",
+					},
+				},
+			);
+			expect(state).toEqual({
+				status: "cancelled",
+				monthCycle: "2026-03",
+			});
 		});
 	});
 });
