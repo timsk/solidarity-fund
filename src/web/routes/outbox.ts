@@ -1,7 +1,7 @@
 import type { SQLiteConnectionPool } from "@event-driven-io/emmett-sqlite";
 import { createOutboxStore } from "../../infrastructure/outbox/store.ts";
 import { type OutboxRow, outboxPage } from "../pages/outbox.ts";
-import { calcOffset, calcTotalPages, parsePage } from "./utils.ts";
+import { calcOffset, calcTotalPages, PAGE_SIZE, parsePage } from "./utils.ts";
 
 const VALID_STATUSES = ["pending", "sending", "sent", "failed"];
 

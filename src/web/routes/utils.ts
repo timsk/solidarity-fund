@@ -4,7 +4,7 @@ import type {
 } from "@event-driven-io/emmett-sqlite";
 import { closeApplicationWindow } from "../../domain/lottery/commandHandlers.ts";
 
-const PAGE_SIZE = 25;
+export const PAGE_SIZE = 25;
 
 export function parsePage(param: string | null, totalPages: number): number {
 	const safeTotalPages = Math.max(1, totalPages);
