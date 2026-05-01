@@ -1,6 +1,6 @@
 import type { SQLiteConnection } from "@event-driven-io/emmett-sqlite";
 
-export const OUTBOX_MESSAGES_TABLE_DDL = `
+const OUTBOX_MESSAGES_TABLE_DDL = `
 	CREATE TABLE IF NOT EXISTS outbox_messages (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		event_stream TEXT NOT NULL,

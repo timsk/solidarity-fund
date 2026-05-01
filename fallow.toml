@@ -1,0 +1,10 @@
+production = true
+
+[health]
+hotspots = true
+score = true
+maxCognitive = 15
+
+[duplicates]
+mode = "mild"
+minTokens = 30

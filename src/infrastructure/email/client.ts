@@ -10,6 +10,7 @@ export interface EmailClient {
 	}): Promise<{ success: boolean; messageId?: string; error?: string }>;
 }
 
+// fallow-ignore-next-line unused-exports
 export class SmtpEmailClient implements EmailClient {
 	private transporter: nodemailer.Transporter;
 
@@ -51,6 +52,7 @@ export class SmtpEmailClient implements EmailClient {
 	}
 }
 
+// fallow-ignore-next-line unused-exports
 export class NullEmailClient implements EmailClient {
 	async send() {
 		return { success: true };

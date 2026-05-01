@@ -14,7 +14,9 @@ const port = Number(process.env.TEST_PORT ?? 3001);
 
 process.env.ALTCHA_HMAC_KEY = process.env.ALTCHA_HMAC_KEY ?? "test-hmac-key";
 
-const { store: eventStore, pool } = createEventStore("file::memory:?cache=shared");
+const { store: eventStore, pool } = createEventStore(
+	"file::memory:?cache=shared",
+);
 const sessionStore = await SQLiteSessionStore(pool);
 const volunteerRepo = await SQLiteVolunteerRepository(pool);
 const applicantRepo = await SQLiteApplicantRepository(pool);

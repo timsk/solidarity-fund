@@ -4,6 +4,24 @@ import type {
 } from "@event-driven-io/emmett-sqlite";
 import { closeApplicationWindow } from "../../domain/lottery/commandHandlers.ts";
 
+const PAGE_SIZE = 25;
+
+export function parsePage(param: string | null, totalPages: number): number {
+	const safeTotalPages = Math.max(1, totalPages);
+	if (!param) return 1;
+	const n = parseInt(param, 10);
+	if (Number.isNaN(n)) return 1;
+	return Math.min(Math.max(1, n), safeTotalPages);
+}
+
+export function calcOffset(page: number): number {
+	return (page - 1) * PAGE_SIZE;
+}
+
+export function calcTotalPages(total: number): number {
+	return Math.max(1, Math.ceil(total / PAGE_SIZE));
+}
+
 export function currentMonthCycle(): string {
 	const now = new Date();
 	const y = now.getFullYear();

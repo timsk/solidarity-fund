@@ -103,7 +103,7 @@ export type ApplicantEvent =
 	| ApplicantUpdated
 	| ApplicantDeleted;
 
-export type ApplicantEventType = ApplicantEvent["type"];
+type ApplicantEventType = ApplicantEvent["type"];
 
 // State
 

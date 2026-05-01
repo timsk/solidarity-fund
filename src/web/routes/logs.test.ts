@@ -1,6 +1,6 @@
 // src/web/routes/logs.test.ts
 import { describe, expect, it } from "bun:test";
-import { calcOffset, calcTotalPages, parsePage } from "./logs.ts";
+import { calcOffset, calcTotalPages, parsePage } from "./utils.ts";
 
 describe("parsePage", () => {
 	it("defaults to 1 when param absent", () => {

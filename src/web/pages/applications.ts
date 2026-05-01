@@ -20,6 +20,7 @@ function formatDate(iso: string): string {
 	});
 }
 
+// fallow-ignore-next-line unused-exports
 export function statusBadge(status: string): string {
 	const colors: Record<string, string> = {
 		accepted: "bg-blue-50 text-blue-700 border-blue-200",
@@ -44,6 +45,7 @@ function paymentBadge(pref: string): string {
 	return `<span class="badge bg-green-50 text-green-700 border-green-200">Cash</span>`;
 }
 
+// fallow-ignore-next-line unused-exports
 export function applicationRow(a: ApplicationRow): string {
 	return `<tr
 		class="table-row"
@@ -74,6 +76,7 @@ export function applicationsTableBody(applications: ApplicationRow[]): string {
 	return `<tbody id="application-rows">${rows}</tbody>`;
 }
 
+// fallow-ignore-next-line unused-exports
 export const STATUS_OPTIONS = [
 	{ value: "all", label: "All Statuses" },
 	{ value: "applied", label: "Applied" },

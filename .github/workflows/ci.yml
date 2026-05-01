@@ -7,6 +7,15 @@ on:
     branches: [main]
 
 jobs:
+  fallow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx fallow audit
+        continue-on-error: true
+
   test:
     runs-on: ubuntu-latest
     steps:

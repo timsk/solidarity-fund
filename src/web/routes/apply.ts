@@ -68,163 +68,169 @@ export function createApplyRoutes(
 
 		async handleSubmit(req: Request): Promise<Response> {
 			try {
-			await autoCloseExpiredLottery(pool, eventStore);
-			const formData = await req.formData();
-			const name = String(formData.get("name") ?? "").trim();
-			const phone = String(formData.get("phone") ?? "").trim();
-			const email = String(formData.get("email") ?? "").trim() || undefined;
-			const meetingPlace =
-				String(formData.get("meetingPlace") ?? "").trim() || undefined;
-			const paymentPref = String(formData.get("paymentPreference") ?? "cash");
+				await autoCloseExpiredLottery(pool, eventStore);
+				const formData = await req.formData();
+				const name = String(formData.get("name") ?? "").trim();
+				const phone = String(formData.get("phone") ?? "").trim();
+				const email = String(formData.get("email") ?? "").trim() || undefined;
+				const meetingPlace =
+					String(formData.get("meetingPlace") ?? "").trim() || undefined;
+				const paymentPref = String(formData.get("paymentPreference") ?? "cash");
 
-			const altcha = String(formData.get("altcha") ?? "");
-			if (!altcha) {
-				return new Response("Bot verification failed", { status: 400 });
-			}
-			const verified = await verifySolution(altcha, hmacKey);
-			if (!verified) {
-				return new Response("Bot verification failed", { status: 400 });
-			}
-
-			if (!name || !phone) {
-				return new Response("Name and phone are required", {
-					status: 400,
-				});
-			}
-
-			if (!isValidPhone(phone)) {
-				return new Response("Please enter a valid phone number", {
-					status: 400,
-				});
-			}
-
-			if (paymentPref === "cash" && !meetingPlace) {
-				return new Response("Meeting place is required for cash applications", {
-					status: 400,
-				});
-			}
-
-			const normalizedPhone = normalizePhone(phone);
-
-			let sortCode = "";
-			let accountNumber = "";
-			if (paymentPref === "bank") {
-				sortCode = String(formData.get("sortCode") ?? "").trim();
-				accountNumber = String(formData.get("accountNumber") ?? "").trim();
-				if (!sortCode || !accountNumber) {
-					return new Response(
-						"Sort code and account number are required for bank transfer",
-						{ status: 400 },
-					);
+				const altcha = String(formData.get("altcha") ?? "");
+				if (!altcha) {
+					return new Response("Bot verification failed", { status: 400 });
 				}
-				if (!/^\d{2}-?\d{2}-?\d{2}$/.test(sortCode)) {
-					return new Response(
-						"Sort code must be 6 digits, e.g. 12-34-56 or 123456",
-						{ status: 400 },
-					);
+				const verified = await verifySolution(altcha, hmacKey);
+				if (!verified) {
+					return new Response("Bot verification failed", { status: 400 });
 				}
-				if (!/^\d{8}$/.test(accountNumber)) {
-					return new Response("Account number must be 8 digits", {
+
+				if (!name || !phone) {
+					return new Response("Name and phone are required", {
 						status: 400,
 					});
 				}
-			}
 
-			const applicationId = crypto.randomUUID();
-
-			const ALLOWED_POA_MIME_TYPES = [
-				"image/jpeg",
-				"image/png",
-				"image/gif",
-				"image/webp",
-				"application/pdf",
-			];
-
-			let proofOfAddressRef = "";
-			if (paymentPref === "bank") {
-				const poaFile = formData.get("poa");
-				if (poaFile instanceof File && poaFile.size > 0) {
-					if (poaFile.size > 5 * 1024 * 1024) {
-						return new Response("File too large (max 5MB)", { status: 400 });
-					}
-					if (!ALLOWED_POA_MIME_TYPES.includes(poaFile.type)) {
-						return new Response("Invalid file type", { status: 400 });
-					}
-					const validatedMimeType = poaFile.type;
-					const docId = crypto.randomUUID();
-					const buffer = Buffer.from(await poaFile.arrayBuffer());
-					await docStore.store({
-						id: docId,
-						entityId: applicationId,
-						type: "proof_of_address",
-						data: buffer,
-						mimeType: validatedMimeType,
+				if (!isValidPhone(phone)) {
+					return new Response("Please enter a valid phone number", {
+						status: 400,
 					});
-					proofOfAddressRef = docId;
 				}
-			}
 
-			const bankDetails =
-				paymentPref === "bank" && sortCode && accountNumber && proofOfAddressRef
-					? { sortCode, accountNumber, proofOfAddressRef }
-					: undefined;
+				if (paymentPref === "cash" && !meetingPlace) {
+					return new Response(
+						"Meeting place is required for cash applications",
+						{
+							status: 400,
+						},
+					);
+				}
 
-			const paymentPreference: PaymentPreference =
-				paymentPref === "bank" ? "bank" : "cash";
-			const monthCycle = await getCurrentLotteryMonthCycle(pool);
-			const applicantId = toApplicantId(normalizedPhone, name);
-			const eligibility = await checkEligibility(
-				applicantId,
-				name,
-				email,
-				monthCycle,
-				pool,
-			);
+				const normalizedPhone = normalizePhone(phone);
 
-			if (eligibility.status === "duplicate") {
-				const params = new URLSearchParams({
-					status: "rejected",
-					reason: "duplicate",
-					existingAppliedAt: eligibility.appliedAt ?? "",
-					ref: eligibility.ref ?? "",
-					drawDate: drawDate(monthCycle),
-				});
-				return Response.redirect(`/apply/result?${params}`, 302);
-			}
+				let sortCode = "";
+				let accountNumber = "";
+				if (paymentPref === "bank") {
+					sortCode = String(formData.get("sortCode") ?? "").trim();
+					accountNumber = String(formData.get("accountNumber") ?? "").trim();
+					if (!sortCode || !accountNumber) {
+						return new Response(
+							"Sort code and account number are required for bank transfer",
+							{ status: 400 },
+						);
+					}
+					if (!/^\d{2}-?\d{2}-?\d{2}$/.test(sortCode)) {
+						return new Response(
+							"Sort code must be 6 digits, e.g. 12-34-56 or 123456",
+							{ status: 400 },
+						);
+					}
+					if (!/^\d{8}$/.test(accountNumber)) {
+						return new Response("Account number must be 8 digits", {
+							status: 400,
+						});
+					}
+				}
 
-			const { events } = await submitApplication(
-				{
-					applicationId,
-					phone: normalizedPhone,
+				const applicationId = crypto.randomUUID();
+
+				const ALLOWED_POA_MIME_TYPES = [
+					"image/jpeg",
+					"image/png",
+					"image/gif",
+					"image/webp",
+					"application/pdf",
+				];
+
+				let proofOfAddressRef = "";
+				if (paymentPref === "bank") {
+					const poaFile = formData.get("poa");
+					if (poaFile instanceof File && poaFile.size > 0) {
+						if (poaFile.size > 5 * 1024 * 1024) {
+							return new Response("File too large (max 5MB)", { status: 400 });
+						}
+						if (!ALLOWED_POA_MIME_TYPES.includes(poaFile.type)) {
+							return new Response("Invalid file type", { status: 400 });
+						}
+						const validatedMimeType = poaFile.type;
+						const docId = crypto.randomUUID();
+						const buffer = Buffer.from(await poaFile.arrayBuffer());
+						await docStore.store({
+							id: docId,
+							entityId: applicationId,
+							type: "proof_of_address",
+							data: buffer,
+							mimeType: validatedMimeType,
+						});
+						proofOfAddressRef = docId;
+					}
+				}
+
+				const bankDetails =
+					paymentPref === "bank" &&
+					sortCode &&
+					accountNumber &&
+					proofOfAddressRef
+						? { sortCode, accountNumber, proofOfAddressRef }
+						: undefined;
+
+				const paymentPreference: PaymentPreference =
+					paymentPref === "bank" ? "bank" : "cash";
+				const monthCycle = await getCurrentLotteryMonthCycle(pool);
+				const applicantId = toApplicantId(normalizedPhone, name);
+				const eligibility = await checkEligibility(
+					applicantId,
 					name,
 					email,
-					paymentPreference,
-					meetingPlace,
 					monthCycle,
-					eligibility,
-					bankDetails,
-				},
-				eventStore,
-				applicantRepo,
-			);
+					pool,
+				);
 
-			const lastEvent = events[events.length - 1];
-			let status = "accepted";
-			let reason = "";
+				if (eligibility.status === "duplicate") {
+					const params = new URLSearchParams({
+						status: "rejected",
+						reason: "duplicate",
+						existingAppliedAt: eligibility.appliedAt ?? "",
+						ref: eligibility.ref ?? "",
+						drawDate: drawDate(monthCycle),
+					});
+					return Response.redirect(`/apply/result?${params}`, 302);
+				}
 
-			if (lastEvent?.type === "ApplicationRejected") {
-				status = "rejected";
-				reason = lastEvent.data.reason;
-			} else if (lastEvent?.type === "ApplicationFlaggedForReview") {
-				status = "flagged";
-			}
+				const { events } = await submitApplication(
+					{
+						applicationId,
+						phone: normalizedPhone,
+						name,
+						email,
+						paymentPreference,
+						meetingPlace,
+						monthCycle,
+						eligibility,
+						bankDetails,
+					},
+					eventStore,
+					applicantRepo,
+				);
 
-			const app = await appRepo.getById(applicationId);
-			const ref = String(app?.ref ?? applicationId);
-			const params = new URLSearchParams({ status, ref });
-			if (reason) params.set("reason", reason);
+				const lastEvent = events[events.length - 1];
+				let status = "accepted";
+				let reason = "";
 
-			return Response.redirect(`/apply/result?${params}`, 302);
+				if (lastEvent?.type === "ApplicationRejected") {
+					status = "rejected";
+					reason = lastEvent.data.reason;
+				} else if (lastEvent?.type === "ApplicationFlaggedForReview") {
+					status = "flagged";
+				}
+
+				const app = await appRepo.getById(applicationId);
+				const ref = String(app?.ref ?? applicationId);
+				const params = new URLSearchParams({ status, ref });
+				if (reason) params.set("reason", reason);
+
+				return Response.redirect(`/apply/result?${params}`, 302);
 			} catch (err: unknown) {
 				const msg = err instanceof Error ? err.message : String(err);
 				console.error("[APPLY ERROR]", msg);

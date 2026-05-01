@@ -103,6 +103,7 @@ function badgeClass(type: string): string {
 	return "bg-cream-200 text-bark-muted";
 }
 
+// fallow-ignore-next-line unused-exports
 export function describeEvent(
 	type: string,
 	data: Record<string, unknown>,

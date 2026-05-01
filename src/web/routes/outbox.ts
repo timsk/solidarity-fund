@@ -1,26 +1,9 @@
 import type { SQLiteConnectionPool } from "@event-driven-io/emmett-sqlite";
 import { createOutboxStore } from "../../infrastructure/outbox/store.ts";
 import { type OutboxRow, outboxPage } from "../pages/outbox.ts";
-
-const PAGE_SIZE = 25;
+import { calcOffset, calcTotalPages, parsePage } from "./utils.ts";
 
 const VALID_STATUSES = ["pending", "sending", "sent", "failed"];
-
-export function parsePage(param: string | null, totalPages: number): number {
-	const safeTotalPages = Math.max(1, totalPages);
-	if (!param) return 1;
-	const n = parseInt(param, 10);
-	if (Number.isNaN(n)) return 1;
-	return Math.min(Math.max(1, n), safeTotalPages);
-}
-
-export function calcOffset(page: number): number {
-	return (page - 1) * PAGE_SIZE;
-}
-
-export function calcTotalPages(total: number): number {
-	return Math.max(1, Math.ceil(total / PAGE_SIZE));
-}
 
 export function createOutboxRoutes(
 	pool: ReturnType<typeof SQLiteConnectionPool>,

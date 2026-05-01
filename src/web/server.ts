@@ -100,6 +100,7 @@ function secureRoutes(
 	);
 }
 
+// fallow-ignore-next-line unused-exports
 export async function getAuthenticatedVolunteer(
 	req: Request,
 	sessionStore: SessionStore,
@@ -112,6 +113,7 @@ export async function getAuthenticatedVolunteer(
 	return volunteerRepo.getById(volunteerId);
 }
 
+// fallow-ignore-next-line unused-exports
 export function requirePasswordChange(volunteer: Volunteer): Response | null {
 	if (volunteer.requiresPasswordReset)
 		return Response.redirect("/change-password", 302);

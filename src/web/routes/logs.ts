@@ -1,23 +1,6 @@
 import type { SQLiteConnectionPool } from "@event-driven-io/emmett-sqlite";
 import { type LogRow, logsPage } from "../pages/logs.ts";
-
-const PAGE_SIZE = 25;
-
-export function parsePage(param: string | null, totalPages: number): number {
-	const safeTotalPages = Math.max(1, totalPages);
-	if (!param) return 1;
-	const n = parseInt(param, 10);
-	if (isNaN(n)) return 1;
-	return Math.min(Math.max(1, n), safeTotalPages);
-}
-
-export function calcOffset(page: number): number {
-	return (page - 1) * PAGE_SIZE;
-}
-
-export function calcTotalPages(total: number): number {
-	return Math.max(1, Math.ceil(total / PAGE_SIZE));
-}
+import { calcOffset, calcTotalPages, parsePage } from "./utils.ts";
 
 function collectVolunteerIds(rows: LogRow[]): Set<string> {
 	const ids = new Set<string>();
@@ -86,11 +69,11 @@ export function createLogsRoutes(
 
 						const rows = await conn.query<LogRow>(
 							`SELECT global_position, created, message_type, message_data
-               FROM emt_messages
-               WHERE message_kind = 'E'
-               ORDER BY global_position DESC
-               LIMIT ? OFFSET ?`,
-							[PAGE_SIZE, offset],
+         FROM emt_messages
+         WHERE message_kind = 'E'
+         ORDER BY global_position DESC
+         LIMIT ? OFFSET ?`,
+							[25, offset],
 						);
 
 						return { rows, total, pages, page };

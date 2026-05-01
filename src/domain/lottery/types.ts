@@ -89,7 +89,7 @@ export type LotteryEvent =
 	| ApplicationWindowClosed
 	| LotteryDrawn;
 
-export type LotteryEventType = LotteryEvent["type"];
+type LotteryEventType = LotteryEvent["type"];
 
 // State
 

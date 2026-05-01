@@ -22,10 +22,12 @@ export function patchElements(
 	return (stream) => stream.patchElements(html, options);
 }
 
+// fallow-ignore-next-line unused-exports
 export function patchSignals(signals: Record<string, unknown>): SSEAction {
 	return (stream) => stream.patchSignals(JSON.stringify(signals));
 }
 
+// fallow-ignore-next-line unused-exports
 export function removeElements(selector: string): SSEAction {
 	return (stream) => stream.removeElements(selector);
 }

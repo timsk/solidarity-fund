@@ -1,5 +1,6 @@
 import type { SQLiteConnectionPool } from "@event-driven-io/emmett-sqlite";
 
+// fallow-ignore-next-line unused-types
 export type Document = {
 	id: string;
 	entityId: string;

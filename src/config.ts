@@ -5,6 +5,7 @@ export function setFundName(name: string): void {
 	_fundName = name;
 }
 
+// fallow-ignore-next-line unused-exports
 export function resetFundName(): void {
 	_fundName = "Community Solidarity Fund";
 }
@@ -62,6 +63,7 @@ export function getSmsConfig(): SmsConfig {
 	return _smsConfig;
 }
 
+// fallow-ignore-next-line unused-exports
 export function resetSmsConfig(): void {
 	_smsConfig = null;
 }
@@ -96,6 +98,7 @@ export function getEmailConfig(): EmailConfig {
 	return _emailConfig;
 }
 
+// fallow-ignore-next-line unused-exports
 export function resetEmailConfig(): void {
 	_emailConfig = null;
 }

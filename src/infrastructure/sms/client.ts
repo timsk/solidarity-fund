@@ -9,6 +9,7 @@ export interface SmsClient {
 	}): Promise<{ success: boolean; messageId?: string; error?: string }>;
 }
 
+// fallow-ignore-next-line unused-exports
 export function toE164(phone: string): string {
 	const digits = normalizePhone(phone);
 	if (digits.startsWith("+")) return digits;
@@ -19,6 +20,7 @@ export function toE164(phone: string): string {
 const CLICKSEND_API_URL = "https://rest.clicksend.com/v3/sms/send";
 const REQUEST_TIMEOUT_MS = 10_000;
 
+// fallow-ignore-next-line unused-exports
 export class ClickSendSmsClient implements SmsClient {
 	constructor(
 		private username: string,
@@ -87,6 +89,7 @@ export class ClickSendSmsClient implements SmsClient {
 	}
 }
 
+// fallow-ignore-next-line unused-exports
 export class NullSmsClient implements SmsClient {
 	async send() {
 		return { success: true };
