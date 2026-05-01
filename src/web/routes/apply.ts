@@ -14,7 +14,7 @@ import type { ApplicationRepository } from "../../domain/application/repository.
 import { submitApplication } from "../../domain/application/submitApplication.ts";
 import type { PaymentPreference } from "../../domain/application/types.ts";
 import type { DocumentStore } from "../../infrastructure/projections/documents.ts";
-import { applyClosedPage, applyPage } from "../pages/apply.ts";
+import { applyClosedPage, applyPage, applyResultPage } from "../pages/apply.ts";
 import {
 	autoCloseExpiredLottery,
 	getCurrentLotteryMonthCycle,
@@ -67,6 +67,7 @@ export function createApplyRoutes(
 		},
 
 		async handleSubmit(req: Request): Promise<Response> {
+			try {
 			await autoCloseExpiredLottery(pool, eventStore);
 			const formData = await req.formData();
 			const name = String(formData.get("name") ?? "").trim();
@@ -224,6 +225,11 @@ export function createApplyRoutes(
 			if (reason) params.set("reason", reason);
 
 			return Response.redirect(`/apply/result?${params}`, 302);
+			} catch (err: unknown) {
+				const msg = err instanceof Error ? err.message : String(err);
+				console.error("[APPLY ERROR]", msg);
+				return new Response(`Server error: ${msg}`, { status: 500 });
+			}
 		},
 
 		showResult(req: Request): Response {
