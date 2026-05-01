@@ -12,9 +12,18 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 		await connection.command(`
 			CREATE TABLE IF NOT EXISTS lottery_windows (
 				month_cycle TEXT PRIMARY KEY,
-				status TEXT NOT NULL
+				status TEXT NOT NULL,
+				expected_closing_at TEXT
 			)
 		`);
+		// Migration: add expected_closing_at column to existing databases
+		try {
+			await connection.command(
+				"ALTER TABLE lottery_windows ADD COLUMN expected_closing_at TEXT",
+			);
+		} catch {
+			// Column already exists
+		}
 	},
 
 	handle: async (events, { connection }) => {
@@ -22,8 +31,8 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 			switch (type) {
 				case "ApplicationWindowOpened":
 					await connection.command(
-						`INSERT OR REPLACE INTO lottery_windows (month_cycle, status) VALUES (?, 'open')`,
-						[data.monthCycle],
+						`INSERT OR REPLACE INTO lottery_windows (month_cycle, status, expected_closing_at) VALUES (?, 'open', ?)`,
+						[data.monthCycle, data.expectedClosingAt],
 					);
 					break;
 				case "ApplicationWindowClosed":

@@ -29,7 +29,7 @@ import {
 	applicationsTableBody,
 } from "../pages/applications.ts";
 import { patchElements, sseResponse } from "../sse.ts";
-import { currentMonthCycle } from "./utils.ts";
+import { getCurrentLotteryMonthCycle } from "./utils.ts";
 
 export function createApplicationRoutes(
 	appRepo: ApplicationRepository,
@@ -44,7 +44,8 @@ export function createApplicationRoutes(
 			filters?: ApplicationFilters,
 		): Promise<Response> {
 			const months = await appRepo.listDistinctMonths();
-			const currentMonth = month ?? months[0] ?? currentMonthCycle();
+			const currentMonth =
+				month ?? months[0] ?? (await getCurrentLotteryMonthCycle(pool));
 			const applications = await appRepo.listByMonth(currentMonth, filters);
 			return new Response(
 				applicationsPage(applications, months, currentMonth, filters),

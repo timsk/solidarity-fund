@@ -38,6 +38,7 @@ function decideOpen(
 			data: {
 				monthCycle: command.data.monthCycle,
 				openedAt: command.data.openedAt,
+				expectedClosingAt: command.data.expectedClosingAt,
 			},
 		},
 	];
@@ -105,6 +106,7 @@ export function evolve(state: LotteryState, event: LotteryEvent): LotteryState {
 			return {
 				status: "open",
 				monthCycle: event.data.monthCycle,
+				expectedClosingAt: event.data.expectedClosingAt,
 			};
 		case "ApplicationWindowClosed":
 			return {

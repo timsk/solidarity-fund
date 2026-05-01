@@ -14,13 +14,7 @@ import { processLotteryDrawn } from "../../domain/lottery/processManager.ts";
 import type { LotteryDrawn } from "../../domain/lottery/types.ts";
 import { lotteryContent, lotteryPage } from "../pages/lottery.ts";
 import { patchElements, redirectTo, sseResponse } from "../sse.ts";
-
-function currentMonthCycle(): string {
-	const now = new Date();
-	const y = now.getFullYear();
-	const m = String(now.getMonth() + 1).padStart(2, "0");
-	return `${y}-${m}`;
-}
+import { getCurrentLotteryMonthCycle } from "./utils.ts";
 
 type LotteryWindowRow = { month_cycle: string; status: string };
 
@@ -54,21 +48,21 @@ export function createLotteryRoutes(
 ) {
 	return {
 		async show(): Promise<Response> {
-			const monthCycle = currentMonthCycle();
+			const monthCycle = await getCurrentLotteryMonthCycle(pool);
 			const status = await getWindowStatus(monthCycle, pool);
 			return new Response(lotteryPage(monthCycle, status), {
 				headers: { "Content-Type": "text/html" },
 			});
 		},
 
-		async handleOpen(): Promise<Response> {
-			const monthCycle = currentMonthCycle();
-			await openApplicationWindow(monthCycle, eventStore);
+		async handleOpen(expectedClosingAt: string): Promise<Response> {
+			const monthCycle = await getCurrentLotteryMonthCycle(pool);
+			await openApplicationWindow(monthCycle, expectedClosingAt, eventStore);
 			return sseResponse(patchElements(lotteryContent(monthCycle, "open")));
 		},
 
 		async handleClose(): Promise<Response> {
-			const monthCycle = currentMonthCycle();
+			const monthCycle = await getCurrentLotteryMonthCycle(pool);
 			await closeApplicationWindow(monthCycle, eventStore);
 			return sseResponse(
 				patchElements(lotteryContent(monthCycle, "windowClosed")),
@@ -81,7 +75,7 @@ export function createLotteryRoutes(
 			reserve: number,
 			grantAmount: number,
 		): Promise<Response> {
-			const monthCycle = currentMonthCycle();
+			const monthCycle = await getCurrentLotteryMonthCycle(pool);
 			const applications = await appRepo.listByMonth(monthCycle);
 			const applicantPool = applications
 				.filter((a) => a.status === "accepted" || a.status === "confirmed")

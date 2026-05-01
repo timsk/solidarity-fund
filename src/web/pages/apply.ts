@@ -42,13 +42,9 @@ function formatAppliedAt(iso: string): string {
 }
 
 export function applyPage(closesAt: string): string {
-	return publicLayout(
-		"Apply",
-		`<div class="w-full max-w-md">
-	<div class="card p-8">
-		<h1 class="font-heading text-2xl font-bold text-bark mb-2 text-center">Apply for a grant of up to £40</h1>
-		<div id="countdown" class="text-center mb-4 py-2 px-4 bg-bark/5 rounded-lg border border-bark/10">
-			<span class="text-xs text-bark-muted uppercase tracking-wider">Form closes in</span>
+	const countdownHtml = closesAt
+		? `<div id="countdown" class="text-center mb-4 py-2 px-4 bg-bark/5 rounded-lg border border-bark/10">
+			<span class="text-xs text-bark-muted uppercase tracking-wider">Expected to close in</span>
 			<div class="font-mono text-lg font-bold text-bark tabular-nums" id="countdown-timer">--h --m --s</div>
 		</div>
 		<script>
@@ -71,7 +67,17 @@ export function applyPage(closesAt: string): string {
 			tick();
 			setInterval(tick, 1000);
 		})();
-		</script>
+		</script>`
+		: `<div class="text-center mb-4 py-2 px-4 bg-bark/5 rounded-lg border border-bark/10">
+			<p class="text-sm text-bark-muted">Applications close when volunteers close the window</p>
+		</div>`;
+
+	return publicLayout(
+		"Apply",
+		`<div class="w-full max-w-md">
+	<div class="card p-8">
+		<h1 class="font-heading text-2xl font-bold text-bark mb-2 text-center">Apply for a grant of up to £40</h1>
+		${countdownHtml}
 		<form action="/apply" method="POST" enctype="multipart/form-data" class="space-y-4" data-signals='{"paymentPref": "cash"}'>
 			<div>
 				<label for="name" class="block text-sm font-body text-bark mb-1">Name</label>

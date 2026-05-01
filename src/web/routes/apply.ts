@@ -14,14 +14,11 @@ import type { ApplicationRepository } from "../../domain/application/repository.
 import { submitApplication } from "../../domain/application/submitApplication.ts";
 import type { PaymentPreference } from "../../domain/application/types.ts";
 import type { DocumentStore } from "../../infrastructure/projections/documents.ts";
-import { applyClosedPage, applyPage, applyResultPage } from "../pages/apply.ts";
-
-function currentMonthCycle(): string {
-	const now = new Date();
-	const y = now.getFullYear();
-	const m = String(now.getMonth() + 1).padStart(2, "0");
-	return `${y}-${m}`;
-}
+import { applyClosedPage, applyPage } from "../pages/apply.ts";
+import {
+	getCurrentLotteryMonthCycle,
+	getLotteryClosingTimestamp,
+} from "./utils.ts";
 
 function drawDate(monthCycle: string): string {
 	const [year, month] = monthCycle.split("-").map(Number) as [number, number];
@@ -29,12 +26,6 @@ function drawDate(monthCycle: string): string {
 	const d = String(lastDay.getDate()).padStart(2, "0");
 	const m = String(lastDay.getMonth() + 1).padStart(2, "0");
 	return `${d}/${m}/${lastDay.getFullYear()}`;
-}
-
-function closingTimestamp(monthCycle: string): string {
-	const [year, month] = monthCycle.split("-").map(Number) as [number, number];
-	const lastDay = new Date(Date.UTC(year, month, 0, 23, 59, 59));
-	return lastDay.toISOString();
 }
 
 async function isWindowOpen(
@@ -64,11 +55,10 @@ export function createApplyRoutes(
 ) {
 	return {
 		async showForm(): Promise<Response> {
-			const monthCycle = currentMonthCycle();
+			const monthCycle = await getCurrentLotteryMonthCycle(pool);
 			const open = await isWindowOpen(monthCycle, pool);
-			const html = open
-				? applyPage(closingTimestamp(monthCycle))
-				: applyClosedPage();
+			const closesAt = await getLotteryClosingTimestamp(pool);
+			const html = open ? applyPage(closesAt ?? "") : applyClosedPage();
 			return new Response(html, {
 				headers: { "Content-Type": "text/html" },
 			});
@@ -177,7 +167,7 @@ export function createApplyRoutes(
 
 			const paymentPreference: PaymentPreference =
 				paymentPref === "bank" ? "bank" : "cash";
-			const monthCycle = currentMonthCycle();
+			const monthCycle = await getCurrentLotteryMonthCycle(pool);
 			const applicantId = toApplicantId(normalizedPhone, name);
 			const eligibility = await checkEligibility(
 				applicantId,

@@ -18,6 +18,7 @@ export type OpenApplicationWindow = Command<
 	{
 		monthCycle: string;
 		openedAt: string;
+		expectedClosingAt: string;
 	}
 >;
 
@@ -55,6 +56,7 @@ export type ApplicationWindowOpened = Event<
 	{
 		monthCycle: string;
 		openedAt: string;
+		expectedClosingAt: string;
 	}
 >;
 
@@ -93,7 +95,7 @@ export type LotteryEventType = LotteryEvent["type"];
 
 export type LotteryState =
 	| { status: "initial" }
-	| { status: "open"; monthCycle: string }
+	| { status: "open"; monthCycle: string; expectedClosingAt: string }
 	| { status: "windowClosed"; monthCycle: string }
 	| {
 			status: "drawn";

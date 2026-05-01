@@ -23,7 +23,11 @@ function makePool(n: number): LotteryApplicant[] {
 function openCommand(monthCycle = "2026-03"): OpenApplicationWindow {
 	return {
 		type: "OpenApplicationWindow",
-		data: { monthCycle, openedAt: "2026-03-01T00:00:00Z" },
+		data: {
+			monthCycle,
+			openedAt: "2026-03-01T00:00:00Z",
+			expectedClosingAt: "2026-03-31T23:59:59Z",
+		},
 	};
 }
 
@@ -65,7 +69,11 @@ describe("lottery decider", () => {
 		test("cannot open already-open window", () => {
 			const state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
-				data: { monthCycle: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
+				data: {
+					monthCycle: "2026-03",
+					openedAt: "2026-03-01T00:00:00Z",
+					expectedClosingAt: "2026-03-31T23:59:59Z",
+				},
 			});
 			expect(() => decide(openCommand(), state)).toThrow(IllegalStateError);
 		});
@@ -75,7 +83,11 @@ describe("lottery decider", () => {
 		test("open → ApplicationWindowClosed", () => {
 			const state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
-				data: { monthCycle: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
+				data: {
+					monthCycle: "2026-03",
+					openedAt: "2026-03-01T00:00:00Z",
+					expectedClosingAt: "2026-03-31T23:59:59Z",
+				},
 			});
 			const events = decide(closeCommand(), state);
 			expect(events).toHaveLength(1);
@@ -92,7 +104,11 @@ describe("lottery decider", () => {
 		test("cannot close already-closed window", () => {
 			let state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
-				data: { monthCycle: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
+				data: {
+					monthCycle: "2026-03",
+					openedAt: "2026-03-01T00:00:00Z",
+					expectedClosingAt: "2026-03-31T23:59:59Z",
+				},
 			});
 			state = evolve(state, {
 				type: "ApplicationWindowClosed",
@@ -214,11 +230,16 @@ describe("lottery decider", () => {
 		test("ApplicationWindowOpened → open", () => {
 			const state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
-				data: { monthCycle: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
+				data: {
+					monthCycle: "2026-03",
+					openedAt: "2026-03-01T00:00:00Z",
+					expectedClosingAt: "2026-03-31T23:59:59Z",
+				},
 			});
 			expect(state).toEqual({
 				status: "open",
 				monthCycle: "2026-03",
+				expectedClosingAt: "2026-03-31T23:59:59Z",
 			});
 		});
 

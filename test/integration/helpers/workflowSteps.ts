@@ -58,7 +58,11 @@ export async function openWindow(env: TestEnv, monthCycle: string) {
 		lotteryDecide(
 			{
 				type: "OpenApplicationWindow",
-				data: { monthCycle, openedAt: `${monthCycle}-01T00:00:00Z` },
+				data: {
+					monthCycle,
+					openedAt: `${monthCycle}-01T00:00:00Z`,
+					expectedClosingAt: `${monthCycle}-28T23:59:59Z`,
+				},
 			},
 			state,
 		),
@@ -164,7 +168,11 @@ export async function selectWinner(
 		lotteryDecide(
 			{
 				type: "OpenApplicationWindow",
-				data: { monthCycle, openedAt: `${monthCycle}-01T00:00:00Z` },
+				data: {
+					monthCycle,
+					openedAt: `${monthCycle}-01T00:00:00Z`,
+					expectedClosingAt: `${monthCycle}-28T23:59:59Z`,
+				},
 			},
 			state,
 		),

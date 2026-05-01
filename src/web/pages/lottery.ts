@@ -30,7 +30,14 @@ function actionSection(month: string, status: LotteryStatus): string {
 	switch (status) {
 		case "initial":
 			return `<p class="text-bark-muted mb-4">No window open for ${escapeHtml(month)}.</p>
-				<button class="btn btn-primary" data-on:click="@post('/lottery/open')">Open Applications</button>`;
+				<form data-on:submit="@post('/lottery/open')" class="space-y-4 max-w-sm">
+					<div>
+						<label class="label" for="expectedClosing">Expected close date</label>
+						<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" data-bind:expected-closing />
+						<p class="text-xs text-bark-muted mt-1">This is shown to applicants as the estimated deadline. The window will still be closed manually.</p>
+					</div>
+					<button type="submit" class="btn btn-primary">Open Applications</button>
+				</form>`;
 		case "open":
 			return `<p class="text-bark-muted mb-4">Applications open for ${escapeHtml(month)}.</p>
 				<button class="btn btn-primary" data-on:click="@post('/lottery/close')">Close Applications</button>`;
@@ -58,7 +65,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 }
 
 export function lotteryPage(monthCycle: string, status: LotteryStatus): string {
-	const body = `<div class="max-w-2xl mx-auto px-4 py-8" data-signals='{"availablebalance": "", "reserve": "", "grantamount": ""}'>
+	const body = `<div class="max-w-2xl mx-auto px-4 py-8" data-signals='{"availablebalance": "", "reserve": "", "grantamount": "", "expectedclosing": ""}'>
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-3">
 			<a href="/" class="text-bark-muted hover:text-bark transition-colors text-sm">&larr; Back</a>

@@ -24,7 +24,7 @@ import {
 	ServerSentEventGenerator,
 	sseResponse,
 } from "../sse.ts";
-import { currentMonthCycle } from "./utils.ts";
+import { getCurrentLotteryMonthCycle } from "./utils.ts";
 
 export function createGrantRoutes(
 	grantRepo: GrantRepository,
@@ -58,7 +58,8 @@ export function createGrantRoutes(
 	return {
 		async list(month?: string): Promise<Response> {
 			const months = await grantRepo.listDistinctMonths();
-			const currentMonth = month ?? months[0] ?? currentMonthCycle();
+			const currentMonth =
+				month ?? months[0] ?? (await getCurrentLotteryMonthCycle(pool));
 			const grants = await grantRepo.listByMonth(currentMonth);
 			return new Response(grantsPage(grants, months, currentMonth), {
 				headers: { "Content-Type": "text/html" },

@@ -17,14 +17,14 @@ describe("lottery command handlers", () => {
 	});
 
 	test("openApplicationWindow appends ApplicationWindowOpened", async () => {
-		await openApplicationWindow("2026-03", eventStore);
+		await openApplicationWindow("2026-03", "2026-03-31T23:59:00Z", eventStore);
 		const stream = await eventStore.readStream("lottery-2026-03");
 		expect(stream.events).toHaveLength(1);
 		expect(stream.events[0]!.type).toBe("ApplicationWindowOpened");
 	});
 
 	test("closeApplicationWindow appends ApplicationWindowClosed", async () => {
-		await openApplicationWindow("2026-03", eventStore);
+		await openApplicationWindow("2026-03", "2026-03-31T23:59:00Z", eventStore);
 		await closeApplicationWindow("2026-03", eventStore);
 		const stream = await eventStore.readStream("lottery-2026-03");
 		expect(stream.events).toHaveLength(2);
@@ -32,7 +32,7 @@ describe("lottery command handlers", () => {
 	});
 
 	test("drawLottery appends LotteryDrawn", async () => {
-		await openApplicationWindow("2026-03", eventStore);
+		await openApplicationWindow("2026-03", "2026-03-31T23:59:00Z", eventStore);
 		await closeApplicationWindow("2026-03", eventStore);
 		await drawLottery(
 			"2026-03",

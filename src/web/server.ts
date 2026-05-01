@@ -680,7 +680,14 @@ export async function startServer(
 			}
 
 			if (url.pathname === "/lottery/open" && req.method === "POST") {
-				return lotteryRoutes.handleOpen();
+				const signals = await req.json();
+				const expectedClosing = String(signals.expectedclosing ?? "");
+				if (!expectedClosing) {
+					return new Response("Expected closing date is required", {
+						status: 400,
+					});
+				}
+				return lotteryRoutes.handleOpen(expectedClosing);
 			}
 			if (url.pathname === "/lottery/close" && req.method === "POST") {
 				return lotteryRoutes.handleClose();

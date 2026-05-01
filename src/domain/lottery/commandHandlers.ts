@@ -14,6 +14,7 @@ function streamId(monthCycle: string): string {
 
 export async function openApplicationWindow(
 	monthCycle: string,
+	expectedClosingAt: string,
 	eventStore: EventStore,
 ): Promise<void> {
 	const now = new Date().toISOString();
@@ -21,7 +22,7 @@ export async function openApplicationWindow(
 		decide(
 			{
 				type: "OpenApplicationWindow",
-				data: { monthCycle, openedAt: now },
+				data: { monthCycle, openedAt: now, expectedClosingAt },
 			},
 			state,
 		),

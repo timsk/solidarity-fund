@@ -21,6 +21,7 @@ describe("grant routes", () => {
 			volunteerRepo,
 			docStore,
 			env.eventStore,
+			env.pool,
 		);
 
 		// Seed an applicant for the grant FK (required by the grants projection JOIN)
