@@ -15,6 +15,15 @@ function escapeHtml(s: string): string {
 		.replace(/"/g, "&quot;");
 }
 
+function defaultClosingValue(): string {
+	const now = new Date();
+	const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+	const y = lastDay.getFullYear();
+	const m = String(lastDay.getMonth() + 1).padStart(2, "0");
+	const d = String(lastDay.getDate()).padStart(2, "0");
+	return `${y}-${m}-${d}T23:59`;
+}
+
 function statusBadge(status: LotteryStatus): string {
 	const styles: Record<LotteryStatus, string> = {
 		initial: "bg-gray-50 text-gray-600 border-gray-200",
@@ -44,8 +53,8 @@ function actionSection(month: string, status: LotteryStatus): string {
 					</div>
 					<div>
 						<label class="label" for="expectedClosing">Expected close date</label>
-						<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" data-bind:expected-closing />
-						<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
+				<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" value="${defaultClosingValue()}" data-bind:expected-closing />
+					<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
 					</div>
 					<button type="submit" class="btn btn-primary">Open Applications</button>
 				</form>`;
@@ -89,7 +98,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 				</div>
 				<div>
 					<label class="label" for="expectedClosing">Expected close date</label>
-					<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" data-bind:expected-closing />
+					<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" value="${defaultClosingValue()}" data-bind:expected-closing />
 					<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
 				</div>
 				<button type="submit" class="btn btn-primary">Open Applications</button>
@@ -106,7 +115,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 				</div>
 				<div>
 					<label class="label" for="expectedClosing">Expected close date</label>
-					<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" data-bind:expected-closing />
+					<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" value="${defaultClosingValue()}" data-bind:expected-closing />
 					<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
 				</div>
 				<button type="submit" class="btn btn-primary">Open Applications</button>
