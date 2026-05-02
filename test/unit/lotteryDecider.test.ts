@@ -359,7 +359,11 @@ describe("lottery decider", () => {
 
 		test("LotteryCancelled → cancelled", () => {
 			const state = evolve(
-				{ status: "open", monthCycle: "2026-03", expectedClosingAt: "2026-03-31T23:59:59Z" },
+				{
+					status: "open",
+					monthCycle: "2026-03",
+					expectedClosingAt: "2026-03-31T23:59:59Z",
+				},
 				{
 					type: "LotteryCancelled",
 					data: {

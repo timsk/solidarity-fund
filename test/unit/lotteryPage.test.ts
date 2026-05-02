@@ -59,4 +59,20 @@ describe("lotteryPage", () => {
 		const html = lotteryPage("2026-03", "open");
 		expect(html).toContain("Close Applications");
 	});
+
+	test("drawn state shows new lottery form", () => {
+		const html = lotteryPage("2026-03", "drawn");
+		expect(html).toContain("data-on:submit=\"@post('/lottery/open')\"");
+		expect(html).toContain('id="lotteryName"');
+		expect(html).toContain('id="expectedClosing"');
+		expect(html).toContain("Open Applications");
+	});
+
+	test("cancelled state shows new lottery form", () => {
+		const html = lotteryPage("2026-03", "cancelled");
+		expect(html).toContain("data-on:submit=\"@post('/lottery/open')\"");
+		expect(html).toContain('id="lotteryName"');
+		expect(html).toContain('id="expectedClosing"');
+		expect(html).toContain("Open Applications");
+	});
 });

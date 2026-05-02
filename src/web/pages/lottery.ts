@@ -79,10 +79,38 @@ function actionSection(month: string, status: LotteryStatus): string {
 				</form>`;
 		case "drawn":
 			return `<p class="text-bark-muted mb-4">Lottery drawn for ${escapeHtml(month)}.</p>
-			<a href="/applications?month=${encodeURIComponent(month)}" class="btn btn-primary no-underline">View Results</a>`;
+			<a href="/applications?month=${encodeURIComponent(month)}" class="btn btn-primary no-underline">View Results</a>
+			<hr class="my-6" />
+			<p class="text-bark-muted mb-4">Start a new lottery below.</p>
+			<form data-on:submit="@post('/lottery/open')" class="space-y-4 max-w-sm">
+				<div>
+					<label class="label" for="lotteryName">Lottery name</label>
+					<input id="lotteryName" name="lotteryName" type="text" required class="input" placeholder="e.g. May 2026 Fundraiser" data-bind:lotteryname />
+				</div>
+				<div>
+					<label class="label" for="expectedClosing">Expected close date</label>
+					<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" data-bind:expected-closing />
+					<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
+				</div>
+				<button type="submit" class="btn btn-primary">Open Applications</button>
+			</form>`;
 		case "cancelled":
 			return `<p class="text-bark-muted mb-4">Lottery cancelled for ${escapeHtml(month)}.</p>
-			<a href="/" class="btn btn-primary no-underline">Back to Dashboard</a>`;
+			<a href="/" class="btn btn-primary no-underline">Back to Dashboard</a>
+			<hr class="my-6" />
+			<p class="text-bark-muted mb-4">Start a new lottery below.</p>
+			<form data-on:submit="@post('/lottery/open')" class="space-y-4 max-w-sm">
+				<div>
+					<label class="label" for="lotteryName">Lottery name</label>
+					<input id="lotteryName" name="lotteryName" type="text" required class="input" placeholder="e.g. May 2026 Fundraiser" data-bind:lotteryname />
+				</div>
+				<div>
+					<label class="label" for="expectedClosing">Expected close date</label>
+					<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" data-bind:expected-closing />
+					<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
+				</div>
+				<button type="submit" class="btn btn-primary">Open Applications</button>
+			</form>`;
 	}
 }
 
