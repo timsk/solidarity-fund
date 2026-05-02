@@ -10,6 +10,12 @@ Transactional SMS notifications are sent using [ClickSend](https://www.clicksend
 | `CLICKSEND_USERNAME` | If enabled | — | ClickSend account username |
 | `CLICKSEND_API_KEY` | If enabled | — | ClickSend REST API key |
 | `SMS_LOG_LEVEL` | No | `warn` | Verbosity: `silent`, `warn`, `info`, `debug` |
+| `EMAIL_ENABLED` | No | `false` | Master switch for email notifications |
+| `GMAIL_USER` | If email enabled | — | Gmail address used as SMTP sender |
+| `GMAIL_APP_PASSWORD` | If email enabled | — | Gmail app password (not the account password) |
+| `EMAIL_FROM_NAME` | No | `GMAIL_USER` | Display name on outgoing emails |
+
+When `EMAIL_ENABLED=true` **and** the applicant provided an email address during submission, email is the preferred notification channel. SMS is used only as a fallback for applicants who didn't provide an email.
 
 ## First-time setup
 
@@ -25,15 +31,17 @@ SMS is disabled by default (`SMS_ENABLED=false`). This keeps local development a
 
 ## What gets sent
 
-SMS notifications fire in response to domain events:
+Both channels fire on the same domain events. Email sends rich HTML to the applicant's provided email address; SMS sends plain text to their phone.
 
-- `ApplicationSubmitted` — "Your application has been received."
-- `ApplicationAccepted` — "Your application has been accepted."
-- `ApplicationRejected` — "Your application could not be approved: {reason}."
-- `ApplicationSelected` — "Your application has been selected in the lottery."
-- `GrantPaid` — "Your grant has been paid."
+| Event | SMS | Email |
+|-------|-----|-------|
+| `ApplicationSubmitted` | "Your application has been received." | Welcome message with next steps |
+| `ApplicationAccepted` | "Your application has been accepted." | Approval notice with details |
+| `ApplicationRejected` | "Your application could not be approved: {reason}." | Rejection notice including reason |
+| `ApplicationSelected` | "Your application has been selected in the lottery." | Lottery selection confirmation |
+| `GrantPaid` | "Your grant has been paid." | Payment confirmation |
 
-Intermediate operational events (volunteer assigned, proof of address approved, etc.) do **not** trigger SMS.
+Intermediate operational events (volunteer assigned, proof of address approved, etc.) do **not** trigger any notification.
 
 ## Troubleshooting
 
@@ -46,8 +54,8 @@ Check logs via the `/logs` admin page. Look for lines prefixed with `[sms]`.
 | `debug` | Not yet implemented |
 | `silent` | Nothing |
 
-If the ClickSend API is down, the processor logs the error and continues. Events are durable in the event store, so SMS is a best-effort side effect.
+If the ClickSend API is down, the sender logs the error and continues. Failed deliveries remain in the outbox for review via the `/outbox` admin page (status filter, manual delete).
 
 ## Architecture notes
 
-The SMS service is an event-driven processor attached to the Emmett SQLite event store. It keeps the domain pure — command handlers never touch SMS directly. The processor starts in `src/web/index.ts` and consumes events via `eventStore.consumer()`.
+Outbox pattern: domain events write to the `outbox_messages` table. A backend sender loop drains pending messages every few seconds via a `ChannelSender` registry (currently email + SMS). SMS is best-effort — failures are logged and surfaced in the `/outbox` admin page but never block the domain.

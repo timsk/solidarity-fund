@@ -1,14 +1,14 @@
 # Solidarity Fund
 
-A grant lottery system for distributing monthly grants to people in need. Applications are collected during a limited window, then winners are randomly drawn at month end.
+A grant lottery system for distributing on-demand grant lotteries to people in need. Applications are collected during a limited window, then winners are drawn when volunteers close the lottery.
 
 ## How it works
 
-1. People apply via SMS, email, or web form during a monthly window
+1. People apply via SMS, email, or web form during an open lottery window
 2. Identity is resolved against known applicants by phone number
 3. Eligibility is checked (3-month cooldown, no duplicate applications)
 4. Eligible applicants enter the lottery pool
-5. At month end, winners are drawn based on available funds
+5. When the lottery closes, winners are drawn based on available funds
 6. Winners receive grants via bank transfer or cash
 
 ## Architecture
@@ -27,6 +27,11 @@ submitApplication()          -- application service (orchestrates I/O)
   |
   v
 Events --> Projections       -- inline projections update read models
+  |
+  v
+Outbox                       -- idempotent message delivery queue
+  |-- emailSender            -- Gmail SMTP (preferred delivery)
+  |-- SMSSender              -- Twilio fallback
 ```
 
 ### Domain (`src/domain/application/`)
@@ -110,6 +115,10 @@ PORT=443 FUND_NAME="Mutual Aid Fund" ./install.sh root@your-server
 | `FUND_NAME` | `Community Solidarity Fund` | Displayed in the UI |
 | `ADMIN_PASSWORD` | auto-generated | Only used on first boot if no admin exists |
 | `ALTCHA_HMAC_KEY` | auto-generated | Required every boot — preserved across upgrades |
+| `EMAIL_ENABLED` | `false` | Set to `true` to enable email delivery of lottery results |
+| `GMAIL_USER` | — | Gmail address for SMTP sending (required if EMAIL_ENABLED=true) |
+| `GMAIL_APP_PASSWORD` | — | Gmail app password for SMTP auth (required if EMAIL_ENABLED=true) |
+| `EMAIL_FROM_NAME` | `Solidarity Fund` | Display name for the From field on notification emails |
 
 ### What lives where
 

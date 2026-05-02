@@ -4,7 +4,7 @@
 
 ## Summary
 
-We're moving from manually awarding £40 grants to a **lottery-based system**: anyone applies during a limited window, winners are randomly drawn at month end, limited by available funds.
+We're moving from manually awarding £40 grants to a **lottery-based system**: volunteers create named lotteries with optional close dates, anyone applies during the window, winners are randomly drawn, limited by available funds.
 
 ---
 
@@ -13,11 +13,14 @@ We're moving from manually awarding £40 grants to a **lottery-based system**: a
 ```mermaid
 flowchart TD
     %% APPLICATION PHASE
-    subgraph "📥 APPLICATION PHASE · volunteer opens/closes the window"
+    subgraph "📥 APPLICATION PHASE · volunteer creates and manages the lottery"
         SMS([📱 Person texts or<br/>emails to apply]) --> LINK[Auto-reply with<br/>unique form link]
         WEB([🌐 Person visits<br/>website form]) --> FORM
         LINK --> FORM["Complete Online Form<br/>(name, phone number (required),<br/>email (optional),<br/>meeting place or address,<br/>payment preference: bank or cash;<br/>if bank: optionally upload POA +<br/>sort code + account no. now<br/>to speed up payment later)"]
 
+        CREATE([Volunteer creates lottery<br/>with name and expected close]) --> OPEN([Open<br/>application window])
+        OPEN --> ACCEPT["Applications<br/>accepted"]
+        
         FORM --> WINDOW{Window<br/>open?}
         WINDOW -->|No| REJ_CLOSED[❌ Rejected<br/>Window closed — notify]
         WINDOW -->|Yes| ID{"Identity<br/>Resolution"}
@@ -37,13 +40,20 @@ flowchart TD
         ELIG -->|Last grant < 3 months| REJ_COOL[❌ Rejected<br/>Too soon — notify]
         ELIG -->|Already applied<br/>this month| REJ_DUP[❌ Rejected<br/>Duplicate — notify]
         ELIG -->|✅ Eligible| POOL[✅ Added to<br/>Lottery Pool]
+        
+        ACCEPT -.->|Auto-close at expected close date| CLOSE
+    end
+
+    %% CANCEL FLOW
+    subgraph "🚫 CANCEL FLOW"
+        ACCEPT --> CANCEL{Volunteer<br/>cancels?}
+        CANCEL -->|Yes| CANCELLED[❌ Lottery cancelled<br/>All applications cleared]
+        CANCEL -->|No| CONTINUE
+        CONTINUE --> CLOSE([Volunteer closes<br/>application window])
     end
 
     %% LOTTERY PHASE
     subgraph "🎲 LOTTERY PHASE · Volunteer-driven lifecycle"
-        POOL --> OPEN([Volunteer opens<br/>application window])
-        OPEN --> ACCEPT["Applications<br/>accepted"]
-        ACCEPT --> CLOSE([Volunteer closes<br/>application window])
         CLOSE --> BALANCE["Volunteer enters<br/>balance, reserve & grant amount"]
         BALANCE --> CALC["Calculate slots:<br/>floor((balance − reserve) ÷ £40)"]
         CALC --> DRAW[🎲 Draw lottery<br/>with auditable RNG seed]
@@ -82,15 +92,15 @@ flowchart TD
     %% NO-RESPONSE HANDLING
     subgraph "⏳ NO-RESPONSE HANDLING"
         WIN_NOTIFY -->|No response<br/>7 days| REMIND["Send reminder<br/>+ try calling if<br/>phone number on file"]
-        REMIND -->|No response<br/>14 days| HOLD[Slot held until<br/>month end]
-        HOLD -->|Month end| RELEASE
+        REMIND -->|No response<br/>14 days| RELEASE
     end
 
     %% WAITLIST
     subgraph "📋 WAITLIST"
         RELEASE --> WAIT{Next person<br/>on waitlist?}
         WAIT -->|Yes| WIN_NOTIFY
-        WAIT -->|No| ROLLOVER[Funds roll over<br/>to next month]
+        WAIT -->|No| END[Lottery ends; funds remain<br/>for next volunteer-created lottery]
+        CANCELLED --> END
     end
 
     %% STYLE DEFINITIONS
@@ -106,6 +116,8 @@ flowchart TD
     style BANK_PAID fill:#4CAF50,color:#fff
     style REIMBURSED fill:#4CAF50,color:#fff
     style PAY fill:#FF9800,color:#fff
+    style CANCELLED fill:#f44336,color:#fff
+    style END fill:#9E9E9E,color:#fff
 ```
 
 ---
@@ -116,10 +128,10 @@ flowchart TD
 |------|--------|
 | **Grant amount** | £40 fixed |
 | **Cooldown** | 3 months from selection month (selected Jan → reapply Apr) |
-| **Application window** | Volunteer explicitly opens and closes each month's window; applications outside the window are rejected with reason `window_closed` |
+| **Application window** | Volunteer creates a named lottery with optional expected close date; one lottery open at a time |
 | **Phone number** | Mandatory — helps with eligibility checking and contacting winners |
 | **Slots available** | Volunteer enters fund balance; `floor((balance − reserve) ÷ £40)`, reserve set by admin |
-| **Unresponsive winners** | Reminder + phone call attempt at 7 days, slot held until month end then released to waitlist |
+| **Unresponsive winners** | Reminder at 7 days; volunteer releases slot manually when applicant is unresponsive or declines cash. No fixed month-end deadline. |
 | **POA verification** | Max 3 attempts, then offered cash as alternative before releasing slot |
 | **Payment options** | Bank transfer or cash (in-person meeting) |
 | **Data retention** | Applicant info auto-deleted after 6 months (matching existing volunteer data policy) |
@@ -138,7 +150,8 @@ flowchart TD
 - Cash alternative offered after 3 failed POA attempts
 - Slot release on cash alternative decline
 - Waitlist promotion (automated when slot is released)
-- SMS notifications for all application lifecycle events (submitted, accepted, rejected, selected, not selected, paid)
+- Outbox message delivery (email preferred, SMS fallback) for all application lifecycle events
+- Auto-close lottery when expected close date passes (lazy check on apply + cron safety net)
 
 ### Automated (not yet implemented)
 - Auto-reply to SMS/email with form link
@@ -147,8 +160,11 @@ flowchart TD
 
 ### Volunteer Actions (implemented)
 - Resolve identity mismatches (review flagged applications)
-- Open application window (manual, starts acceptance for the month)
-- Close application window (manual, ends acceptance for the month)
+- Create a lottery with name and expected close date
+- Cancel active lottery (clears all applications)
+- Start new lottery after draw or cancel
+- Open application window (manual, starts acceptance)
+- Close application window (manual, ends acceptance)
 - Trigger lottery draw (manual, after entering fund balance)
 - Verify proof of address uploads (approve/reject)
 - Assign volunteer to grant
@@ -213,17 +229,19 @@ Applicant holds identity only (phone, name, email). Per-application choices (pay
 
 | Command | Who | Allowed States | What Happens |
 |---------|-----|----------------|--------------|
-| `OpenApplicationWindow` | Volunteer | initial | Opens the application window for this month's cycle; applications can now be submitted |
+| `OpenApplicationWindow` | Volunteer | initial, drawn, cancelled | Opens the application window; carries `name: string` and `expectedClosingAt: string`; applications can now be submitted |
 | `CloseApplicationWindow` | Volunteer | open | Closes the application window; no more applications accepted |
 | `DrawLottery` | Volunteer | windowClosed | Volunteer provides fund balance, reserve, and grant amount; seeded RNG selects winners |
+| `CancelLottery` | Volunteer | open, windowClosed | Cancels the lottery; process manager reverts all affected applications |
 
 #### Events
 
 | Event | Trigger | What Happens |
 |-------|---------|--------------|
-| `ApplicationWindowOpened` | Volunteer opens window | Start accepting applications for this month |
-| `ApplicationWindowClosed` | Volunteer closes window | Stop accepting new applications for this month |
+| `ApplicationWindowOpened` | Volunteer opens window | Start accepting applications; carries lottery name and expectedClosingAt |
+| `ApplicationWindowClosed` | Volunteer closes window | Stop accepting new applications |
 | `LotteryDrawn` | Volunteer triggers draw | Seeded RNG selects winners; process manager fans out selection commands |
+| `LotteryCancelled` | Volunteer cancels lottery | Clears all accepted/flagged/confirmed applications via process manager |
 
 ### Application Selection (implemented)
 
@@ -231,6 +249,7 @@ Applicant holds identity only (phone, name, email). Per-application choices (pay
 |-------|---------|--------------|
 | `ApplicationSelected` | Process manager (post-draw) | Applicant won the lottery; ranked for waitlist |
 | `ApplicationNotSelected` | Process manager (post-draw) | Applicant not selected this month |
+| `ApplicationLotteryCancelled` | Lottery cancelled | Application reverted to cancelled; removed from pool |
 
 ### Grant Aggregate (implemented)
 
@@ -289,9 +308,15 @@ stateDiagram-v2
     offered_cash_alternative --> released : SlotReleased
     awaiting_cash_handover --> released : SlotReleased
 
+    awaiting_review --> cancelled : SlotReleased
+    poa_approved --> cancelled : SlotReleased
+    offered_cash_alternative --> cancelled : SlotReleased
+    awaiting_cash_handover --> cancelled : SlotReleased
+
     note right of paid : Terminal (bank)
     note right of reimbursed : Terminal (cash)
     note right of released : Terminal
+    note right of cancelled : Terminal
 ```
 
 ### Not Yet Implemented
@@ -307,7 +332,8 @@ stateDiagram-v2
 
 | System | Purpose |
 |--------|---------|
-| Email service | Notifications + form links |
+| Outbox | Idempotent message delivery queue (email preferred, SMS fallback) |
+| Email service (SMTP) | HTML email notifications via Gmail or custom SMTP |
 | SMS gateway | Inbound SMS parsing + outbound notifications |
 | Web form | Application intake |
 | Document storage | Proof of address uploads |

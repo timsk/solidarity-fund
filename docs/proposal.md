@@ -1,10 +1,10 @@
 # Grant Lottery System
 
-**Proposal for volunteer approval — March 2026**
+**Proposal for volunteer approval — May 2026**
 
 ## Summary
 
-We're moving from manually awarding £40 grants to a **lottery-based system**: anyone applies during a limited window, winners are randomly drawn at month end, limited by available funds.
+We're moving from manually awarding £40 grants to a **lottery-based system**: anyone applies during a lottery window, winners are randomly drawn when volunteers close the window, limited by available funds.
 
 ---
 
@@ -12,7 +12,7 @@ We're moving from manually awarding £40 grants to a **lottery-based system**: a
 
 ```mermaid
 flowchart TD
-    subgraph "📥 APPLICATION PHASE · open for a limited window (dates TBD)"
+    subgraph "📥 APPLICATION PHASE · volunteer creates and manages each lottery window"
         SMS([📱 Person texts or<br/>emails to apply]) --> LINK[Auto-reply with<br/>unique form link]
         WEB([🌐 Person visits<br/>website form]) --> FORM
         LINK --> FORM["Complete Online Form<br/>(name, phone number (required),<br/>email (optional),<br/>meeting place or address,<br/>payment preference: bank or cash)"]
@@ -32,9 +32,8 @@ flowchart TD
         ELIG -->|✅ Eligible| POOL[✅ Added to<br/>Lottery Pool]
     end
 
-    subgraph "🎲 LOTTERY PHASE · Month End"
-        TIMER([⏰ Month-end<br/>scheduler fires]) --> CLOSE[Close application<br/>window]
-        CLOSE --> BALANCE[Volunteer enters<br/>fund balance]
+    subgraph "🎲 LOTTERY PHASE · Volunteer closes window"
+        CLOSE([Volunteer closes<br/>application window]) --> BALANCE[Volunteer enters<br/>fund balance]
         BALANCE --> CALC["Calculate slots:<br/>floor((balance − reserve) ÷ £40)"]
         CALC --> DRAW[🎲 Draw lottery<br/>with auditable RNG seed]
 
@@ -68,23 +67,22 @@ flowchart TD
 
     subgraph "⏳ NO-RESPONSE HANDLING"
         WIN_NOTIFY -->|No response<br/>7 days| REMIND["Send reminder<br/>+ try calling if<br/>phone number on file"]
-        REMIND -->|No response<br/>14 days| HOLD[Slot held until<br/>month end]
-        HOLD -->|Month end| RELEASE
+        REMIND -->|No response<br/>7+ days| HOLD[Slot held until<br/>volunteer releases]
+        HOLD -->|Volunteer decides| RELEASE
     end
 
     subgraph "📋 WAITLIST"
         RELEASE --> WAIT{Next person<br/>on waitlist?}
         WAIT -->|Yes| WIN_NOTIFY
-        WAIT -->|No| ROLLOVER[Funds roll over<br/>to next month]
+        WAIT -->|No| END[Lottery ends; funds<br/>remain for next<br/>volunteer-created lottery]
     end
-
-    POOL -.->|End of month| TIMER
 
     style SMS fill:#4CAF50,color:#fff
     style WEB fill:#4CAF50,color:#fff
     style REJ_COOL fill:#f44336,color:#fff
     style REJ_DUP fill:#f44336,color:#fff
     style POOL fill:#2196F3,color:#fff
+    style CLOSE fill:#FF9800,color:#fff
     style DRAW fill:#9C27B0,color:#fff
     style RECORD fill:#4CAF50,color:#fff
     style PAY fill:#FF9800,color:#fff
@@ -98,10 +96,10 @@ flowchart TD
 |------|--------|
 | **Grant amount** | £40 fixed |
 | **Cooldown** | 3 months from selection month (selected Jan → reapply Apr) |
-| **Application window** | Limited window each month (dates TBD — not open all month) |
+| **Application window** | Volunteer opens a named lottery window with an optional expected close date |
 | **Phone number** | Mandatory — helps with eligibility checking and contacting winners |
 | **How many winners?** | Volunteer enters fund balance; slots = floor((balance − reserve) ÷ £40), reserve set by admin |
-| **Unresponsive winners** | Reminder + phone call attempt at 7 days, slot held until month end then released to waitlist |
+| **Unresponsive winners** | Reminder at 7 days; volunteer releases slot manually when applicant is unresponsive or declines cash |
 | **Proof of address** | Required for bank transfer, max 3 attempts — then offered cash as alternative |
 | **Payment options** | Bank transfer or cash (in-person handover) |
 | **Data retention** | Applicant info auto-deleted after 6 months (matching existing volunteer data policy) |
@@ -113,16 +111,18 @@ flowchart TD
 ### The system handles
 - Auto-reply to SMS/email with application form link
 - Checking eligibility (cooldown period, duplicate applications)
-- Running the lottery draw at month end
+- Running the draw when volunteer triggers it
 - Notifying winners and non-winners
-- Sending bank details + proof of address forms to winners
+- Sending email notifications (preferred channel) and SMS fallback for all application lifecycle events
 - Sending reminders to unresponsive winners
 - Moving waitlisted people up when a slot opens
 
 ### Volunteers need to
+- Create and name each lottery, set expected close date
 - Check identity when a known phone number applies with a different name
 - Review proof of address uploads (for bank transfers)
 - Meet recipients in person to hand over cash
+- Cancel a lottery if needed
 - Handle any paused payments (e.g. if funds run low mid-cycle)
 
 ---
@@ -132,8 +132,8 @@ flowchart TD
 1. Text/email us, or visit the website
 2. Get a link to the online form
 3. Fill in: name, phone number (required), email (optional), where they'd like to meet (or address), and whether they want bank transfer or cash
-4. If eligible, they're added to that month's lottery pool
-5. At month end, winners are drawn and notified
+4. If eligible, they're added to the lottery pool
+5. When volunteer closes the window, winners are drawn and notified
 
 ## What Happens If You Win
 
@@ -149,9 +149,9 @@ flowchart TD
 
 ## What Happens If You Don't Win
 
-- You're notified that you weren't selected this month
-- You can apply again next month
-- If a winner doesn't respond within 14 days (we'll try calling too), their slot is released to the waitlist at month end
+- You're notified that you weren't selected
+- You can apply again when a new lottery opens
+- If a winner doesn't respond within 14 days (we'll try calling too), their slot is released to the waitlist
 
 ---
 

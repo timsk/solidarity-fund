@@ -1,6 +1,6 @@
 # Volunteer User Guide
 
-This guide covers everything volunteers need to operate the grant lottery system from month start to month end.
+This guide covers everything volunteers need to operate the grant lottery system from creating a lottery to completing grants.
 
 ---
 
@@ -8,7 +8,7 @@ This guide covers everything volunteers need to operate the grant lottery system
 
 1. [Initial Login](#1-initial-login)
 2. [Managing Volunteers](#2-managing-volunteers)
-3. [Opening the Lottery](#3-opening-the-lottery)
+3. [Creating the Lottery](#3-creating-the-lottery)
 4. [Reviewing Applications](#4-reviewing-applications)
 5. [Closing the Lottery & Drawing Winners](#5-closing-the-lottery--drawing-winners)
 6. [Grant Workflow — Bank Transfer](#6-grant-workflow--bank-transfer)
@@ -80,31 +80,34 @@ Go to **Volunteers** → click the volunteer → click **History** to see their 
 
 ---
 
-## 3. Opening the Lottery
+## 3. Creating the Lottery
 
-At the start of each month's application period, a volunteer must open the application window.
+Lotteries are created on-demand. Only one lottery can be open at a time.
 
 1. Go to **Lottery** in the navigation
-2. The current window status is displayed (e.g. _No window open_)
-3. Click **Open Application Window**
-4. The window is now open — applicants can submit applications via the public form at `/apply`
+2. If no lottery is open, a creation form appears with:
+   - **Lottery name** (text, e.g. "May 2026 Fundraiser") — required
+   - **Expected close date** (datetime-local input, pre-filled with last day of current month at 23:59)
+3. Click **Open Applications** — the lottery opens and applicants can submit via `/apply`
+4. A countdown timer is displayed on the `/apply` page showing time remaining until the expected close date
+5. Auto-close fires at the expected close date (lazy check on form visit + cron safety net). Volunteers can also close manually beforehand.
 
-> **What happens when the window opens:** The system begins accepting applications. Applications submitted before the window opens are automatically rejected with the reason _window closed_.
+> **What happens when the lottery opens:** The system begins accepting applications. Applications submitted before the lottery opens are automatically rejected with the reason _window closed_.
 
 ### How Applicants Apply
 
-Once the window is open, applicants submit via the public form at `/apply`. The form collects:
+Applicants submit via the public form at `/apply`. Required fields are marked with asterisks. The form collects:
 
-- **Name** (required)
-- **Phone number** (required — used for identity resolution and contacting winners)
-- **Email** (optional)
-- **Meeting place or address** (required — used to arrange cash handovers)
-- **Payment preference** — bank transfer or cash
-  - If bank: **sort code** (6 digits, format `XX-XX-XX`) and **account number** (8 digits) are required, and applicants can optionally upload a **proof of address** document (JPEG, PNG, GIF, WebP, or PDF, max 5MB) at this stage to speed up verification later
+- **Name*** (required)
+- **Email*** (required)
+- **Phone number*** (required — used for identity resolution and contacting winners)
+- **Meeting place or address*** (required — used to arrange cash handovers)
+- **Payment preference*** — bank transfer or cash
+  - If bank: **sort code*** (6 digits, format `XX-XX-XX`) and **account number*** (8 digits) are required, and applicants can optionally upload a **proof of address** document (JPEG, PNG, GIF, WebP, or PDF, max 5MB) to speed up verification later
 
 After submitting, applicants see a confirmation page with their application reference number and outcome (accepted, flagged for review, or rejected with reason).
 
-If the window is closed, the form displays a _window closed_ message and no application is submitted.
+If the lottery is closed, the form displays a _window closed_ message and no application is submitted.
 
 ### Checking Application Status
 
@@ -193,6 +196,24 @@ After closing the window:
 > **Auditable draw:** The RNG seed is deterministic and stored, so the draw can be verified independently.
 
 > After the draw, all accepted applications are marked either `selected` or `not_selected`.
+
+### Canceling an Active Lottery
+
+If you need to cancel a lottery that is currently open:
+
+1. Go to **Lottery** while the lottery is open
+2. Click **Cancel Lottery** (red button)
+3. Inline confirmation appears: "This will delete all applications!"
+4. Click **Cancel Lottery** again to confirm, or **Keep** to abort
+5. All accepted, flagged, and confirmed applications are cancelled; applicants are notified
+
+### Starting a New Lottery After Draw or Cancel
+
+After a lottery is drawn or cancelled, the **Lottery** page shows the "Open Applications" form again:
+
+1. Enter a **lottery name** and **expected close date**
+2. Click **Open Applications**
+3. The new lottery is now open for applications
 
 ---
 
@@ -295,11 +316,8 @@ To complete the reimbursement audit trail:
 
 If a winner does not respond after being notified:
 
-| Timeline | Action |
-|----------|--------|
-| 7 days no response | Send a reminder; attempt to call if a phone number is on file |
-| 14 days no response | Slot is held until month end |
-| Month end | Manually release the slot |
+- Reminder attempted at 7 days
+- If a winner is unresponsive after 7 days, the volunteer may manually release the slot. There is no fixed timeline — release whenever the grant cannot proceed.
 
 ### Releasing a Slot
 
@@ -349,13 +367,25 @@ Deleting an applicant soft-deletes them from the system. Their event history is 
 
 > **Admin only.** The following tools are only visible and accessible to volunteers with admin status.
 
+### Outbox
+
+The Outbox (`/outbox`) shows all queued messages from the outbox pattern:
+
+1. Go to **Outbox** in the navigation
+2. Filter by status: **All**, **Pending**, **Sending**, **Sent**, **Failed** (tab-based)
+3. Messages show color-coded status badges
+4. Paginated (25 per page)
+5. **Delete** individual messages or **bulk delete** selected messages
+
+Use for: monitoring failed email/SMS, clearing old queued messages.
+
 ### Event Log
 
 The Event Log (`/logs`) provides a paginated audit trail of all domain events in the system — applications submitted, grants created, payments recorded, volunteers managed, etc.
 
 1. Go to **Event Log** in the navigation
 2. Events are listed newest-first, 25 per page
-3. Each entry shows: event sequence number, relative time ("3 hours ago"), event type (color-coded badge), and a human-readable description
+3. Each entry shows: event sequence number, relative time ("3 hours ago"), event type (color-coded badge), and a human-readable description with volunteer names
 
 Use this for debugging, auditing, or understanding the system's activity history.
 
@@ -388,27 +418,27 @@ The system includes several security measures that operate transparently:
 |------|--------|
 | **Grant amount** | £40 per grant |
 | **Cooldown** | 3 months from the month of selection — e.g. selected in January → can reapply in April |
-| **Duplicate applications** | One application per person per open window |
-| **Application window** | Must be manually opened and closed each month |
+| **Duplicate applications** | One application per person per open lottery |
+| **Application window** | Volunteer creates a named lottery with an expected close date; one lottery open at a time |
 | **Slot calculation** | `floor((fund balance − reserve) ÷ £40)` |
 | **POA attempts** | Maximum 3 — after 3 rejections, cash is offered automatically |
-| **Unresponsive winners** | Reminder at 7 days, slot held until month end (14+ days), then released manually |
+| **Unresponsive winners** | Reminder attempted at 7 days; volunteer releases slot manually when applicant is unresponsive or declines cash. No fixed deadline. |
 | **Cash reimbursement** | Volunteers who pay cash must record an expense reference to complete the grant |
 | **Waitlist** | Winners are ranked — lower-ranked selections serve as the waitlist if slots are released |
 
 ---
 
-## Monthly Workflow Checklist
+## Lottery Workflow Checklist
 
 ```
-[ ] Open the application window (start of month)
+[ ] Create a lottery with name and expected close date
 [ ] Monitor flagged applications — review and confirm/reject identity
-[ ] Close the application window (end of application period)
+[ ] Close the lottery (manual or auto-close)
 [ ] Enter fund balance, reserve, and grant amount
 [ ] Draw the lottery
 [ ] Assign yourself to grants
 [ ] For bank grants: verify POA, record payment
 [ ] For cash grants: arrange meeting, record payment, record reimbursement
-[ ] Release slots for unresponsive winners after month end
-[ ] Contact waitlisted applicants if slots are released
+[ ] Release slots for unresponsive winners or declined cash alternatives
+[ ] Waitlist promotion is automated
 ```
