@@ -675,7 +675,7 @@ export async function startServer(
 
 			if (url.pathname === "/lottery/open" && req.method === "POST") {
 				const signals = await req.json();
-				const expectedClosing = String(signals.expectedclosing ?? "");
+				const expectedClosing = String(signals.expectedClosing ?? "");
 				if (!expectedClosing) {
 					return new Response("Expected closing date is required", {
 						status: 400,

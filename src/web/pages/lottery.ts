@@ -115,7 +115,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 }
 
 export function lotteryPage(monthCycle: string, status: LotteryStatus): string {
-	const body = `<div class="max-w-2xl mx-auto px-4 py-8" data-signals='{"availablebalance": "", "reserve": "", "grantamount": "", "expectedclosing": "", "lotteryname": "", "confirmcancel": false}'>
+	const body = `<div class="max-w-2xl mx-auto px-4 py-8" data-signals='{"availablebalance": "", "reserve": "", "grantamount": "", "expectedClosing": "", "lotteryname": "", "confirmcancel": false}'>
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-3">
 			<a href="/" class="text-bark-muted hover:text-bark transition-colors text-sm">&larr; Back</a>
