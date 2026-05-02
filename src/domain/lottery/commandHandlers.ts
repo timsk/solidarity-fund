@@ -8,21 +8,21 @@ const handle = CommandHandler<ReturnType<typeof initialState>, LotteryEvent>({
 	initialState,
 });
 
-function streamId(monthCycle: string): string {
-	return `lottery-${monthCycle}`;
+function streamId(lotteryName: string): string {
+	return `lottery-${lotteryName}`;
 }
 
 export async function openApplicationWindow(
-	monthCycle: string,
+	lotteryName: string,
 	expectedClosingAt: string,
 	eventStore: EventStore,
 ): Promise<void> {
 	const now = new Date().toISOString();
-	await handle(eventStore, streamId(monthCycle), (state) =>
+	await handle(eventStore, streamId(lotteryName), (state) =>
 		decide(
 			{
 				type: "OpenApplicationWindow",
-				data: { monthCycle, openedAt: now, expectedClosingAt },
+				data: { lotteryName, openedAt: now, expectedClosingAt },
 			},
 			state,
 		),
@@ -30,15 +30,15 @@ export async function openApplicationWindow(
 }
 
 export async function closeApplicationWindow(
-	monthCycle: string,
+	lotteryName: string,
 	eventStore: EventStore,
 ): Promise<void> {
 	const now = new Date().toISOString();
-	await handle(eventStore, streamId(monthCycle), (state) =>
+	await handle(eventStore, streamId(lotteryName), (state) =>
 		decide(
 			{
 				type: "CloseApplicationWindow",
-				data: { monthCycle, closedAt: now },
+				data: { lotteryName, closedAt: now },
 			},
 			state,
 		),
@@ -46,15 +46,15 @@ export async function closeApplicationWindow(
 }
 
 export async function cancelLottery(
-	monthCycle: string,
+	lotteryName: string,
 	eventStore: EventStore,
 ): Promise<void> {
 	const now = new Date().toISOString();
-	await handle(eventStore, streamId(monthCycle), (state) =>
+	await handle(eventStore, streamId(lotteryName), (state) =>
 		decide(
 			{
 				type: "CancelLottery",
-				data: { monthCycle, cancelledAt: now },
+				data: { lotteryName, cancelledAt: now },
 			},
 			state,
 		),
@@ -62,7 +62,7 @@ export async function cancelLottery(
 }
 
 export async function drawLottery(
-	monthCycle: string,
+	lotteryName: string,
 	volunteerId: string,
 	availableBalance: number,
 	reserve: number,
@@ -72,12 +72,12 @@ export async function drawLottery(
 ): Promise<void> {
 	const now = new Date().toISOString();
 	const seed = crypto.randomUUID();
-	await handle(eventStore, streamId(monthCycle), (state) =>
+	await handle(eventStore, streamId(lotteryName), (state) =>
 		decide(
 			{
 				type: "DrawLottery",
 				data: {
-					monthCycle,
+					lotteryName,
 					volunteerId,
 					availableBalance,
 					reserve,

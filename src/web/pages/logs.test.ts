@@ -220,28 +220,28 @@ describe("describeEvent", () => {
 		expect(result).toContain("applicant withdrew");
 	});
 
-	it("LotteryDrawn includes selected count, amount, cycle", () => {
+	it("LotteryDrawn includes selected count, amount, lotteryName", () => {
 		const result = describeEvent("LotteryDrawn", {
 			selected: ["a", "b", "c"],
 			grantAmount: 300,
-			monthCycle: "2026-02",
+			lotteryName: "2026-02",
 		});
 		expect(result).toContain("3");
 		expect(result).toContain("300");
 		expect(result).toContain("2026-02");
 	});
 
-	it("ApplicationWindowOpened includes monthCycle", () => {
+	it("ApplicationWindowOpened includes lotteryName", () => {
 		const result = describeEvent("ApplicationWindowOpened", {
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 		});
 		expect(result).toContain("opened");
 		expect(result).toContain("2026-03");
 	});
 
-	it("ApplicationWindowClosed includes monthCycle", () => {
+	it("ApplicationWindowClosed includes lotteryName", () => {
 		const result = describeEvent("ApplicationWindowClosed", {
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 		});
 		expect(result).toContain("closed");
 		expect(result).toContain("2026-03");

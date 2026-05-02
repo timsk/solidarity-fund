@@ -49,7 +49,7 @@ Outbox                       -- idempotent message delivery queue
 | File | Role |
 |------|------|
 | `eventStore.ts` | Creates the SQLite event store with inline projections |
-| `projections/eligibility.ts` | Tracks accepted applications per month cycle |
+| `projections/eligibility.ts` | Tracks accepted applications per lottery name |
 | `projections/knownApplicants.ts` | Maps phone numbers to applicant IDs and names |
 
 ### Identity resolution

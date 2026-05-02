@@ -22,14 +22,14 @@ export function calcTotalPages(total: number): number {
 	return Math.max(1, Math.ceil(total / PAGE_SIZE));
 }
 
-export function currentMonthCycle(): string {
+export function defaultLotteryName(): string {
 	const now = new Date();
 	const y = now.getFullYear();
 	const m = String(now.getMonth() + 1).padStart(2, "0");
 	return `${y}-${m}`;
 }
 
-export async function getCurrentLotteryMonthCycle(
+export async function getCurrentLotteryName(
 	pool: ReturnType<typeof SQLiteConnectionPool>,
 ): Promise<string> {
 	try {
@@ -37,15 +37,15 @@ export async function getCurrentLotteryMonthCycle(
 			const tables = await conn.query<{ name: string }>(
 				"SELECT name FROM sqlite_master WHERE type='table' AND name='lottery_windows'",
 			);
-			if (tables.length === 0) return currentMonthCycle();
+			if (tables.length === 0) return defaultLotteryName();
 
-			const rows = await conn.query<{ month_cycle: string }>(
-				"SELECT month_cycle FROM lottery_windows ORDER BY month_cycle DESC LIMIT 1",
+			const rows = await conn.query<{ lottery_name: string }>(
+				"SELECT lottery_name FROM lottery_windows ORDER BY lottery_name DESC LIMIT 1",
 			);
-			return rows[0]?.month_cycle ?? currentMonthCycle();
+			return rows[0]?.lottery_name ?? defaultLotteryName();
 		});
 	} catch {
-		return currentMonthCycle();
+		return defaultLotteryName();
 	}
 }
 
@@ -55,7 +55,7 @@ export async function getLotteryClosingTimestamp(
 	try {
 		return await pool.withConnection(async (conn) => {
 			const rows = await conn.query<{ expected_closing_at: string | null }>(
-				"SELECT expected_closing_at FROM lottery_windows WHERE status = 'open' ORDER BY month_cycle DESC LIMIT 1",
+				"SELECT expected_closing_at FROM lottery_windows WHERE status = 'open' ORDER BY lottery_name DESC LIMIT 1",
 			);
 			return rows[0]?.expected_closing_at ?? null;
 		});
@@ -66,14 +66,14 @@ export async function getLotteryClosingTimestamp(
 
 export async function getOpenLottery(
 	pool: ReturnType<typeof SQLiteConnectionPool>,
-): Promise<{ month_cycle: string; expected_closing_at: string } | null> {
+): Promise<{ lottery_name: string; expected_closing_at: string } | null> {
 	try {
 		return await pool.withConnection(async (conn) => {
 			const rows = await conn.query<{
-				month_cycle: string;
+				lottery_name: string;
 				expected_closing_at: string;
 			}>(
-				"SELECT month_cycle, expected_closing_at FROM lottery_windows WHERE status = 'open' ORDER BY month_cycle DESC LIMIT 1",
+				"SELECT lottery_name, expected_closing_at FROM lottery_windows WHERE status = 'open' ORDER BY lottery_name DESC LIMIT 1",
 			);
 			return rows[0] ?? null;
 		});
@@ -92,7 +92,7 @@ export async function autoCloseExpiredLottery(
 		if (!open) return false;
 
 		if (open.expected_closing_at <= new Date().toISOString()) {
-			await closeFn(open.month_cycle, eventStore);
+			await closeFn(open.lottery_name, eventStore);
 			return true;
 		}
 

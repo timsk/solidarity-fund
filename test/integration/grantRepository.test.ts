@@ -64,7 +64,7 @@ describe("SQLiteGrantRepository", () => {
 		id: string,
 		opts?: {
 			applicantId?: string;
-			monthCycle?: string;
+			lotteryName?: string;
 			rank?: number;
 			paymentPreference?: string;
 		},
@@ -76,7 +76,7 @@ describe("SQLiteGrantRepository", () => {
 					grantId: id,
 					applicationId: `app-${id}`,
 					applicantId: opts?.applicantId ?? "a1",
-					monthCycle: opts?.monthCycle ?? "2026-03",
+					lotteryName: opts?.lotteryName ?? "2026-03",
 					rank: opts?.rank ?? 1,
 					paymentPreference: (opts?.paymentPreference ?? "bank") as
 						| "bank"
@@ -108,35 +108,35 @@ describe("SQLiteGrantRepository", () => {
 		expect(grant).toBeNull();
 	});
 
-	test("listByMonth returns grants ordered by rank", async () => {
+	test("listByLottery returns grants ordered by rank", async () => {
 		await createGrant("g1", { rank: 2 });
 		await createGrant("g2", { rank: 1 });
 
-		const grants = await repo.listByMonth("2026-03");
+		const grants = await repo.listByLottery("2026-03");
 		expect(grants).toHaveLength(2);
 		expect(grants[0]?.rank).toBe(1);
 		expect(grants[1]?.rank).toBe(2);
 	});
 
-	test("listByMonth filters by month cycle", async () => {
-		await createGrant("g1", { monthCycle: "2026-03" });
-		await createGrant("g2", { monthCycle: "2026-04" });
+	test("listByLottery filters by month cycle", async () => {
+		await createGrant("g1", { lotteryName: "2026-03" });
+		await createGrant("g2", { lotteryName: "2026-04" });
 
-		const march = await repo.listByMonth("2026-03");
+		const march = await repo.listByLottery("2026-03");
 		expect(march).toHaveLength(1);
 		expect(march[0]?.id).toBe("g1");
 	});
 
-	test("listDistinctMonths returns months in descending order", async () => {
-		await createGrant("g1", { monthCycle: "2026-02" });
-		await createGrant("g2", { monthCycle: "2026-03" });
+	test("listDistinctLotteries returns months in descending order", async () => {
+		await createGrant("g1", { lotteryName: "2026-02" });
+		await createGrant("g2", { lotteryName: "2026-03" });
 
-		const months = await repo.listDistinctMonths();
+		const months = await repo.listDistinctLotteries();
 		expect(months).toEqual(["2026-03", "2026-02"]);
 	});
 
-	test("listByMonth returns empty array for unknown month", async () => {
-		const grants = await repo.listByMonth("2099-01");
+	test("listByLottery returns empty array for unknown month", async () => {
+		const grants = await repo.listByLottery("2099-01");
 		expect(grants).toEqual([]);
 	});
 
@@ -148,7 +148,7 @@ describe("SQLiteGrantRepository", () => {
 					grantId: "g-bank-full",
 					applicationId: "app-g-bank-full",
 					applicantId: "a1",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					rank: 1,
 					paymentPreference: "bank",
 					createdAt: "2026-03-01T00:00:00.000Z",

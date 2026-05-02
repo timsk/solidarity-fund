@@ -58,7 +58,7 @@ function detailFields(
 		field("Status", formatStatus(app.status)),
 		field("Payment Preference", formatPaymentPreference(app.paymentPreference)),
 		...(app.meetingPlace ? [field("Meeting Place", app.meetingPlace)] : []),
-		field("Month Cycle", app.monthCycle),
+		field("Lottery Name", app.lotteryName),
 		field("Applied", formatDateTime(app.appliedAt)),
 	];
 

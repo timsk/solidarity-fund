@@ -8,7 +8,7 @@ function makeGrant(overrides: Partial<GrantRow> = {}): GrantRow {
 		id: "g1",
 		applicationId: "app-1",
 		applicantId: "a1",
-		monthCycle: "2026-03",
+		lotteryName: "2026-03",
 		rank: 1,
 		status: "awaiting_review",
 		paymentPreference: "bank",

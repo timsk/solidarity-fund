@@ -1,6 +1,6 @@
 # Replacement Selection Plan
 
-**Goal**: When a grant slot is released (`SlotReleased` event), automatically promote the next-ranked applicant from the lottery's `notSelected` list for that `monthCycle`.
+**Goal**: When a grant slot is released (`SlotReleased` event), automatically promote the next-ranked applicant from the lottery's `notSelected` list for that `lotteryName`.
 
 **Current State**: `SlotReleased` is a terminal event. It frees a slot, marks the grant as `released`, and stops. The `notSelected` list from the `LotteryDrawn` event is never consulted again.
 
@@ -11,13 +11,13 @@
 | Domain | Pattern |
 |--------|---------|
 | Application | `application-{applicationId}` |
-| Lottery | `lottery-{monthCycle}` |
+| Lottery | `lottery-{lotteryName}` |
 | Grant | `grant-{applicationId}` |
 
 ### Key Insight
 
-After a `SlotReleased` fires for `monthCycle`:
-1. Read `lottery-{monthCycle}` stream → get `notSelected` array (preserved shuffle order)
+After a `SlotReleased` fires for `lotteryName`:
+1. Read `lottery-{lotteryName}` stream → get `notSelected` array (preserved shuffle order)
 2. Find the first `notSelected` applicant whose application is still in `not_selected` state
 3. Emit `SelectApplication` on that application's stream
 4. Existing `processApplicationSelected` then auto-creates the grant
@@ -52,7 +52,7 @@ After a `SlotReleased` fires for `monthCycle`:
     9. If no eligible candidates → nothing happens (slot remains unused)
   - Acceptance Criteria:
     - [ ] Compiles without errors
-    - [ ] Reads lottery stream by monthCycle from SlotReleased event data
+    - [ ] Reads lottery stream by lotteryName from SlotReleased event data
     - [ ] Iterates notSelected array, skips already-selected candidates
     - [ ] Promotes exactly one replacement per call
     - [ ] No-ops gracefully when notSelected is empty or all candidates are taken

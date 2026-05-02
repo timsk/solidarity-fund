@@ -10,7 +10,7 @@ const GRANT_CORE = {
 	grantId: "grant-1",
 	applicationId: "app-1",
 	applicantId: "applicant-07700900000-jane doe",
-	monthCycle: "2026-01",
+	lotteryName: "2026-01",
 	rank: 1,
 };
 
@@ -515,7 +515,7 @@ describe("grant decider", () => {
 					grantId: "grant-1",
 					applicationId: "app-1",
 					applicantId: GRANT_CORE.applicantId,
-					monthCycle: "2026-01",
+					lotteryName: "2026-01",
 					amount: 500,
 					method: "cash",
 					paidBy: "vol-1",
@@ -533,7 +533,7 @@ describe("grant decider", () => {
 					grantId: "grant-1",
 					applicationId: "app-1",
 					applicantId: GRANT_CORE.applicantId,
-					monthCycle: "2026-01",
+					lotteryName: "2026-01",
 					amount: 500,
 					method: "bank",
 					paidBy: "vol-1",

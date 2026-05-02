@@ -31,7 +31,7 @@ export async function processApplicationSelected(
 	eventStore: SQLiteEventStore,
 	pool: ReturnType<typeof SQLiteConnectionPool>,
 ): Promise<void> {
-	const { applicationId, applicantId, monthCycle, rank, selectedAt } =
+	const { applicationId, applicantId, lotteryName, rank, selectedAt } =
 		event.data;
 
 	const rows = await pool.withConnection(async (conn) =>
@@ -75,7 +75,7 @@ export async function processApplicationSelected(
 						grantId: applicationId,
 						applicationId,
 						applicantId,
-						monthCycle,
+						lotteryName,
 						rank,
 						paymentPreference,
 						createdAt: selectedAt,
@@ -95,9 +95,9 @@ export async function processSlotReleased(
 	eventStore: SQLiteEventStore,
 	pool: ReturnType<typeof SQLiteConnectionPool>,
 ): Promise<void> {
-	const { monthCycle } = event.data;
+	const { lotteryName } = event.data;
 
-	const lotteryStream = await eventStore.readStream(`lottery-${monthCycle}`);
+	const lotteryStream = await eventStore.readStream(`lottery-${lotteryName}`);
 	if (!lotteryStream.streamExists) return;
 
 	const drawnEvent = lotteryStream.events.findLast(
@@ -131,7 +131,7 @@ export async function processSlotReleased(
 						type: "SelectApplication",
 						data: {
 							applicationId: candidate.applicationId,
-							lotteryMonthCycle: monthCycle,
+							lotteryName,
 							rank,
 							selectedAt,
 						},

@@ -22,7 +22,7 @@ export const grantProjection = sqliteProjection<GrantEvent>({
 				id TEXT PRIMARY KEY,
 				application_id TEXT NOT NULL,
 				applicant_id TEXT NOT NULL,
-				month_cycle TEXT NOT NULL,
+				lottery_name TEXT NOT NULL,
 				rank INTEGER NOT NULL,
 				status TEXT NOT NULL,
 				payment_preference TEXT NOT NULL,
@@ -52,6 +52,13 @@ export const grantProjection = sqliteProjection<GrantEvent>({
 			if (!(e instanceof Error && e.message.includes("duplicate column")))
 				throw e;
 		}
+		try {
+			await connection.command(
+				"ALTER TABLE grants RENAME COLUMN month_cycle TO lottery_name",
+			);
+		} catch {
+			// Column already renamed or doesn't exist
+		}
 	},
 
 	handle: async (events, { connection }) => {
@@ -63,13 +70,13 @@ export const grantProjection = sqliteProjection<GrantEvent>({
 							? "awaiting_review"
 							: "awaiting_cash_handover";
 					await connection.command(
-						`INSERT OR IGNORE INTO grants (id, application_id, applicant_id, month_cycle, rank, status, payment_preference, sort_code, account_number, poa_ref, created_at, updated_at)
+						`INSERT OR IGNORE INTO grants (id, application_id, applicant_id, lottery_name, rank, status, payment_preference, sort_code, account_number, poa_ref, created_at, updated_at)
 						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 						[
 							data.grantId,
 							data.applicationId,
 							data.applicantId,
-							data.monthCycle,
+							data.lotteryName,
 							data.rank,
 							status,
 							data.paymentPreference,

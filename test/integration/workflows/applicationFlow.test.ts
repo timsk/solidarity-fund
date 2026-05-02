@@ -67,14 +67,14 @@ describe("application workflow", () => {
 				applicationId: "app-first",
 				phone: "07700900001",
 				name: "Alice",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			});
 
 			const { events } = await submitAcceptedApplication(env, {
 				applicationId: "app-second",
 				phone: "07700900001",
 				name: "Alice",
-				monthCycle: "2026-04",
+				lotteryName: "2026-04",
 			});
 
 			expect(events[0]!.data.applicantId).toBe(
@@ -98,7 +98,7 @@ describe("application workflow", () => {
 				name: "Alice",
 				paymentPreference: "bank" as const,
 				meetingPlace: "Mill Road",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 				eligibility: { status: "eligible" as const },
 			};
 
@@ -118,7 +118,7 @@ describe("application workflow", () => {
 					name: "Alice",
 					paymentPreference: "bank",
 					meetingPlace: "Mill Road",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					eligibility: { status: "window_closed" },
 				},
 				env.eventStore,
@@ -144,7 +144,7 @@ describe("application workflow", () => {
 					name: "Alice",
 					paymentPreference: "bank",
 					meetingPlace: "Mill Road",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					eligibility: { status: "cooldown", lastGrantMonth: "2026-01" },
 				},
 				env.eventStore,
@@ -166,7 +166,7 @@ describe("application workflow", () => {
 					name: "Alice",
 					paymentPreference: "bank",
 					meetingPlace: "Mill Road",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					eligibility: { status: "duplicate" },
 				},
 				env.eventStore,
@@ -187,7 +187,7 @@ describe("application workflow", () => {
 					name: "Alice",
 					paymentPreference: "bank",
 					meetingPlace: "Mill Road",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					eligibility: { status: "duplicate" },
 				},
 				env.eventStore,
@@ -211,7 +211,7 @@ describe("application workflow", () => {
 				applicationId: "app-first",
 				phone: "07700900001",
 				name: "Alice",
-				monthCycle: "2026-01",
+				lotteryName: "2026-01",
 			});
 
 			const { events } = await submitApplication(
@@ -221,7 +221,7 @@ describe("application workflow", () => {
 					name: "Bob",
 					paymentPreference: "cash",
 					meetingPlace: "Station",
-					monthCycle: "2026-06",
+					lotteryName: "2026-06",
 					eligibility: { status: "eligible" },
 				},
 				env.eventStore,
@@ -281,7 +281,7 @@ describe("application workflow", () => {
 				applicationId: "app-alice-same-month",
 				phone: "07700900001",
 				name: "Alice",
-				monthCycle: "2026-06",
+				lotteryName: "2026-06",
 			});
 
 			// Bob applies same phone, flagged (borrows Alice's applicant ID)
@@ -292,7 +292,7 @@ describe("application workflow", () => {
 					name: "Bob",
 					paymentPreference: "cash",
 					meetingPlace: "Station",
-					monthCycle: "2026-06",
+					lotteryName: "2026-06",
 					eligibility: { status: "eligible" },
 				},
 				env.eventStore,
@@ -371,7 +371,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-first",
 						applicantId: toApplicantId("07700900001", "Alice"),
-						monthCycle: "2026-01",
+						lotteryName: "2026-01",
 						rank: 1,
 						selectedAt: new Date().toISOString(),
 					},
@@ -494,14 +494,14 @@ describe("application workflow", () => {
 			await env.eventStore.appendToStream("lottery-2026-03", [
 				{
 					type: "ApplicationWindowOpened",
-					data: { monthCycle: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
+					data: { lotteryName: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
 				},
 			]);
 			await env.eventStore.appendToStream("lottery-2026-03", [
 				{
 					type: "ApplicationWindowClosed",
 					data: {
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						closedAt: "2026-03-31T23:59:59Z",
 					},
 				},
@@ -523,7 +523,7 @@ describe("application workflow", () => {
 				applicationId: "app-1",
 				phone: "07700900001",
 				name: "Alice",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			});
 
 			const eligibility = await checkEligibility(
@@ -543,7 +543,7 @@ describe("application workflow", () => {
 				applicationId: "app-1",
 				phone: "07700900001",
 				name: "Alice",
-				monthCycle: "2026-01",
+				lotteryName: "2026-01",
 			});
 
 			const eligibility = await checkEligibility(
@@ -562,7 +562,7 @@ describe("application workflow", () => {
 				applicationId: "app-1",
 				phone: "07700900001",
 				name: "Alice",
-				monthCycle: "2026-01",
+				lotteryName: "2026-01",
 			});
 
 			await env.eventStore.appendToStream("application-app-1", [
@@ -571,7 +571,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: toApplicantId("07700900001", "Alice"),
-						monthCycle: "2026-01",
+						lotteryName: "2026-01",
 						rank: 1,
 						selectedAt: new Date().toISOString(),
 					},
@@ -597,7 +597,7 @@ describe("application workflow", () => {
 				applicationId: "app-1",
 				phone: "07700900001",
 				name: "Alice",
-				monthCycle: "2025-11",
+				lotteryName: "2025-11",
 			});
 
 			await env.eventStore.appendToStream("application-app-1", [
@@ -606,7 +606,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: toApplicantId("07700900001", "Alice"),
-						monthCycle: "2025-11",
+						lotteryName: "2025-11",
 						rank: 1,
 						selectedAt: new Date().toISOString(),
 					},
@@ -635,7 +635,7 @@ describe("application workflow", () => {
 						identity: { phone: "07700900001", name: "Alice" },
 						paymentPreference: "bank",
 						meetingDetails: { place: "Mill Road" },
-						monthCycle: "2025-12",
+						lotteryName: "2025-12",
 						submittedAt: new Date().toISOString(),
 					},
 				},
@@ -644,7 +644,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900001",
-						monthCycle: "2025-12",
+						lotteryName: "2025-12",
 						acceptedAt: new Date().toISOString(),
 					},
 				},
@@ -653,7 +653,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900001",
-						monthCycle: "2025-12",
+						lotteryName: "2025-12",
 						rank: 1,
 						selectedAt: new Date().toISOString(),
 					},
@@ -689,7 +689,7 @@ describe("application workflow", () => {
 							identity: { phone: "07700900001", name: "Alice" },
 							paymentPreference: "bank",
 							meetingDetails: { place: "Mill Road" },
-							monthCycle: month,
+							lotteryName: month,
 							submittedAt: new Date().toISOString(),
 						},
 					},
@@ -698,7 +698,7 @@ describe("application workflow", () => {
 						data: {
 							applicationId: appId,
 							applicantId: "applicant-07700900001",
-							monthCycle: month,
+							lotteryName: month,
 							acceptedAt: new Date().toISOString(),
 						},
 					},
@@ -707,7 +707,7 @@ describe("application workflow", () => {
 						data: {
 							applicationId: appId,
 							applicantId: "applicant-07700900001",
-							monthCycle: month,
+							lotteryName: month,
 							rank: 1,
 							selectedAt: new Date().toISOString(),
 						},
@@ -740,7 +740,7 @@ describe("application workflow", () => {
 						identity: { phone: "07700900002", name: "Bob" },
 						paymentPreference: "bank",
 						meetingDetails: { place: "Mill Road" },
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						submittedAt: new Date().toISOString(),
 					},
 				},
@@ -749,7 +749,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900002",
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						acceptedAt: new Date().toISOString(),
 					},
 				},
@@ -758,7 +758,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900002",
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						rank: 1,
 						selectedAt: new Date().toISOString(),
 					},
@@ -806,7 +806,7 @@ describe("application workflow", () => {
 						identity: { phone: "07700900001", name: "Alice" },
 						paymentPreference: "bank",
 						meetingDetails: { place: "Mill Road" },
-						monthCycle: "2026-02",
+						lotteryName: "2026-02",
 						submittedAt: new Date().toISOString(),
 					},
 				},
@@ -815,7 +815,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900001",
-						monthCycle: "2026-02",
+						lotteryName: "2026-02",
 						acceptedAt: new Date().toISOString(),
 					},
 				},
@@ -824,7 +824,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900001",
-						monthCycle: "2026-02",
+						lotteryName: "2026-02",
 						rank: 1,
 						selectedAt: new Date().toISOString(),
 					},
@@ -857,7 +857,7 @@ describe("application workflow", () => {
 						identity: { phone: "07700900001", name: "Alice" },
 						paymentPreference: "bank",
 						meetingDetails: { place: "Mill Road" },
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						submittedAt: new Date().toISOString(),
 					},
 				},
@@ -866,7 +866,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900001",
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						acceptedAt: new Date().toISOString(),
 					},
 				},
@@ -875,7 +875,7 @@ describe("application workflow", () => {
 					data: {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900001",
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						notSelectedAt: new Date().toISOString(),
 					},
 				},

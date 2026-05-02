@@ -63,7 +63,7 @@ function commonFields(grant: GrantRow): string {
 			"Payment Preference",
 			grant.paymentPreference === "bank" ? "Bank Transfer" : "Cash",
 		),
-		field("Month Cycle", grant.monthCycle),
+		field("Lottery Name", grant.lotteryName),
 		field(
 			"Volunteer",
 			grant.volunteerName

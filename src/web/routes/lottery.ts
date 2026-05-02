@@ -21,12 +21,12 @@ import type {
 } from "../../domain/lottery/types.ts";
 import { lotteryContent, lotteryPage } from "../pages/lottery.ts";
 import { patchElements, redirectTo, sseResponse } from "../sse.ts";
-import { getCurrentLotteryMonthCycle } from "./utils.ts";
+import { getCurrentLotteryName } from "./utils.ts";
 
-type LotteryWindowRow = { month_cycle: string; status: string };
+type LotteryWindowRow = { lottery_name: string; status: string };
 
 async function getWindowStatus(
-	monthCycle: string,
+	lotteryName: string,
 	pool: ReturnType<typeof SQLiteConnectionPool>,
 ): Promise<"initial" | "open" | "windowClosed" | "drawn"> {
 	return pool.withConnection(async (conn) => {
@@ -36,8 +36,8 @@ async function getWindowStatus(
 		if (tableRows.length === 0) return "initial";
 
 		const rows = await conn.query<LotteryWindowRow>(
-			"SELECT month_cycle, status FROM lottery_windows WHERE month_cycle = ? LIMIT 1",
-			[monthCycle],
+			"SELECT lottery_name, status FROM lottery_windows WHERE lottery_name = ? LIMIT 1",
+			[lotteryName],
 		);
 		const row = rows[0];
 		if (!row) return "initial";
@@ -55,20 +55,20 @@ export function createLotteryRoutes(
 ) {
 	return {
 		async show(): Promise<Response> {
-			const monthCycle = await getCurrentLotteryMonthCycle(pool);
-			const status = await getWindowStatus(monthCycle, pool);
-			return new Response(lotteryPage(monthCycle, status), {
+			const lotteryName = await getCurrentLotteryName(pool);
+			const status = await getWindowStatus(lotteryName, pool);
+			return new Response(lotteryPage(lotteryName, status), {
 				headers: { "Content-Type": "text/html" },
 			});
 		},
 
 		async handleOpen(
-			monthCycle: string,
+			lotteryName: string,
 			expectedClosingAt: string,
 		): Promise<Response> {
 			const existingOpen = await pool.withConnection(async (conn) => {
-				const rows = await conn.query<{ month_cycle: string }>(
-					"SELECT month_cycle FROM lottery_windows WHERE status = 'open' LIMIT 1",
+				const rows = await conn.query<{ lottery_name: string }>(
+					"SELECT lottery_name FROM lottery_windows WHERE status = 'open' LIMIT 1",
 				);
 				return rows.length > 0;
 			});
@@ -77,15 +77,35 @@ export function createLotteryRoutes(
 					status: 409,
 				});
 			}
-			await openApplicationWindow(monthCycle, expectedClosingAt, eventStore);
-			return sseResponse(patchElements(lotteryContent(monthCycle, "open")));
+
+			const existingName = await pool.withConnection(async (conn) => {
+				const rows = await conn.query<{ lottery_name: string }>(
+					"SELECT lottery_name FROM lottery_windows WHERE lottery_name = ? LIMIT 1",
+					[lotteryName],
+				);
+				return rows.length > 0;
+			});
+			if (existingName) {
+				const errorHtml = `<div id="lottery-error" class="text-red-600 text-sm font-medium" role="alert">A lottery named '${lotteryName.replace(/'/g, "\\'")}' already exists. Choose a different name.</div>`;
+				return sseResponse(patchElements(errorHtml));
+			}
+
+			try {
+				await openApplicationWindow(lotteryName, expectedClosingAt, eventStore);
+				return sseResponse(patchElements(lotteryContent(lotteryName, "open")));
+			} catch (err) {
+				const message =
+					err instanceof Error ? err.message : "Failed to open lottery";
+				const errorHtml = `<div id="lottery-error" class="text-red-600 text-sm font-medium" role="alert">${message.replace(/'/g, "\\'")}</div>`;
+				return sseResponse(patchElements(errorHtml));
+			}
 		},
 
 		async handleClose(): Promise<Response> {
-			const monthCycle = await getCurrentLotteryMonthCycle(pool);
-			await closeApplicationWindow(monthCycle, eventStore);
+			const lotteryName = await getCurrentLotteryName(pool);
+			await closeApplicationWindow(lotteryName, eventStore);
 			return sseResponse(
-				patchElements(lotteryContent(monthCycle, "windowClosed")),
+				patchElements(lotteryContent(lotteryName, "windowClosed")),
 			);
 		},
 
@@ -95,8 +115,8 @@ export function createLotteryRoutes(
 			reserve: number,
 			grantAmount: number,
 		): Promise<Response> {
-			const monthCycle = await getCurrentLotteryMonthCycle(pool);
-			const applications = await appRepo.listByMonth(monthCycle);
+			const lotteryName = await getCurrentLotteryName(pool);
+			const applications = await appRepo.listByLottery(lotteryName);
 			const applicantPool = applications
 				.filter((a) => a.status === "accepted" || a.status === "confirmed")
 				.map((a) => ({
@@ -105,7 +125,7 @@ export function createLotteryRoutes(
 				}));
 
 			await drawLottery(
-				monthCycle,
+				lotteryName,
 				volunteerId,
 				availableBalance,
 				reserve,
@@ -115,7 +135,7 @@ export function createLotteryRoutes(
 			);
 
 			// Read back the LotteryDrawn event to feed the process manager
-			const stream = await eventStore.readStream(`lottery-${monthCycle}`);
+			const stream = await eventStore.readStream(`lottery-${lotteryName}`);
 			const drawnEvent = stream.events.findLast(
 				(e) => e.type === "LotteryDrawn",
 			) as LotteryDrawn | undefined;
@@ -136,12 +156,12 @@ export function createLotteryRoutes(
 				}
 			}
 
-			return sseResponse(redirectTo(`/applications?month=${monthCycle}`));
+			return sseResponse(redirectTo(`/applications?month=${lotteryName}`));
 		},
 
 		async handleCancel(): Promise<Response> {
-			const monthCycle = await getCurrentLotteryMonthCycle(pool);
-			const applications = await appRepo.listByMonth(monthCycle);
+			const lotteryName = await getCurrentLotteryName(pool);
+			const applications = await appRepo.listByLottery(lotteryName);
 			const applicationIds = applications
 				.filter(
 					(a) =>
@@ -151,10 +171,10 @@ export function createLotteryRoutes(
 				)
 				.map((a) => a.id);
 
-			await cancelLottery(monthCycle, eventStore);
+			await cancelLottery(lotteryName, eventStore);
 
 			// Read back the LotteryCancelled event to feed the process manager
-			const stream = await eventStore.readStream(`lottery-${monthCycle}`);
+			const stream = await eventStore.readStream(`lottery-${lotteryName}`);
 			const cancelledEvent = stream.events.findLast(
 				(e) => e.type === "LotteryCancelled",
 			) as LotteryCancelled | undefined;
@@ -167,7 +187,7 @@ export function createLotteryRoutes(
 			}
 
 			return sseResponse(
-				patchElements(lotteryContent(monthCycle, "cancelled")),
+				patchElements(lotteryContent(lotteryName, "cancelled")),
 			);
 		},
 	};

@@ -17,12 +17,12 @@ import type { DocumentStore } from "../../infrastructure/projections/documents.t
 import { applyClosedPage, applyPage, applyResultPage } from "../pages/apply.ts";
 import {
 	autoCloseExpiredLottery,
-	getCurrentLotteryMonthCycle,
+	getCurrentLotteryName,
 	getLotteryClosingTimestamp,
 } from "./utils.ts";
 
-function drawDate(monthCycle: string): string {
-	const [year, month] = monthCycle.split("-").map(Number) as [number, number];
+function drawDate(lotteryName: string): string {
+	const [year, month] = lotteryName.split("-").map(Number) as [number, number];
 	const lastDay = new Date(year, month, 0);
 	const d = String(lastDay.getDate()).padStart(2, "0");
 	const m = String(lastDay.getMonth() + 1).padStart(2, "0");
@@ -30,7 +30,7 @@ function drawDate(monthCycle: string): string {
 }
 
 async function isWindowOpen(
-	monthCycle: string,
+	lotteryName: string,
 	pool: ReturnType<typeof SQLiteConnectionPool>,
 ): Promise<boolean> {
 	return pool.withConnection(async (conn) => {
@@ -39,8 +39,8 @@ async function isWindowOpen(
 		);
 		if (tables.length === 0) return false;
 		const rows = await conn.query<{ status: string }>(
-			"SELECT status FROM lottery_windows WHERE month_cycle = ? LIMIT 1",
-			[monthCycle],
+			"SELECT status FROM lottery_windows WHERE lottery_name = ? LIMIT 1",
+			[lotteryName],
 		);
 		return rows.length > 0 && rows[0]?.status === "open";
 	});
@@ -57,8 +57,8 @@ export function createApplyRoutes(
 	return {
 		async showForm(): Promise<Response> {
 			await autoCloseExpiredLottery(pool, eventStore);
-			const monthCycle = await getCurrentLotteryMonthCycle(pool);
-			const open = await isWindowOpen(monthCycle, pool);
+			const lotteryName = await getCurrentLotteryName(pool);
+			const open = await isWindowOpen(lotteryName, pool);
 			const closesAt = await getLotteryClosingTimestamp(pool);
 			const html = open ? applyPage(closesAt ?? "") : applyClosedPage();
 			return new Response(html, {
@@ -177,13 +177,13 @@ export function createApplyRoutes(
 
 				const paymentPreference: PaymentPreference =
 					paymentPref === "bank" ? "bank" : "cash";
-				const monthCycle = await getCurrentLotteryMonthCycle(pool);
+				const lotteryName = await getCurrentLotteryName(pool);
 				const applicantId = toApplicantId(normalizedPhone, name);
 				const eligibility = await checkEligibility(
 					applicantId,
 					name,
 					email,
-					monthCycle,
+					lotteryName,
 					pool,
 				);
 
@@ -193,7 +193,7 @@ export function createApplyRoutes(
 						reason: "duplicate",
 						existingAppliedAt: eligibility.appliedAt ?? "",
 						ref: eligibility.ref ?? "",
-						drawDate: drawDate(monthCycle),
+						drawDate: drawDate(lotteryName),
 					});
 					return Response.redirect(`/apply/result?${params}`, 302);
 				}
@@ -206,7 +206,7 @@ export function createApplyRoutes(
 						email,
 						paymentPreference,
 						meetingPlace,
-						monthCycle,
+						lotteryName,
 						eligibility,
 						bankDetails,
 					},

@@ -45,7 +45,7 @@ describe("lottery workflow", () => {
 				applicationId: a.id,
 				phone: a.phone,
 				name: a.name,
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			});
 		}
 
@@ -54,14 +54,14 @@ describe("lottery workflow", () => {
 
 		const pool = await env.pool.withConnection(async (conn) =>
 			conn.query<{ id: string; applicant_id: string }>(
-				"SELECT id, applicant_id FROM applications WHERE month_cycle = ? AND status = 'accepted'",
+				"SELECT id, applicant_id FROM applications WHERE lottery_name = ? AND status = 'accepted'",
 				["2026-03"],
 			),
 		);
 
 		// balance=120, grant=40 → 3 winners
 		const drawn = await drawLottery(env, {
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 			applicantPool: pool.map((a) => ({
 				applicationId: a.id,
 				applicantId: a.applicant_id,
@@ -114,7 +114,7 @@ describe("lottery workflow", () => {
 			applicationId: "app-accepted",
 			phone: "07700900001",
 			name: "Alice",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 		});
 
 		// Create a confirmed app by emitting events directly (flagged → confirmed)
@@ -128,7 +128,7 @@ describe("lottery workflow", () => {
 					identity: { phone: "07700900099", name: "Zara" },
 					paymentPreference: "bank",
 					meetingDetails: { place: "Mill Road" },
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					submittedAt: "2026-03-01T00:00:00Z",
 				},
 			},
@@ -138,7 +138,7 @@ describe("lottery workflow", () => {
 					applicationId: "app-confirmed",
 					applicantId: confirmedApplicantId,
 					reason: "multiple-matches",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					flaggedAt: "2026-03-01T00:00:01Z",
 				},
 			},
@@ -148,7 +148,7 @@ describe("lottery workflow", () => {
 					applicationId: "app-confirmed",
 					applicantId: confirmedApplicantId,
 					volunteerId: "vol-1",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					confirmedAt: "2026-03-02T00:00:00Z",
 				},
 			},
@@ -174,7 +174,7 @@ describe("lottery workflow", () => {
 		expect(pool).toHaveLength(2);
 
 		const drawn = await drawLottery(env, {
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 			applicantPool: pool,
 			availableBalance: 80,
 			grantAmount: 40,
@@ -189,14 +189,14 @@ describe("lottery workflow", () => {
 			applicationId: "app-1",
 			phone: "07700900001",
 			name: "Alice",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 		});
 
 		await openWindow(env, "2026-03");
 		await closeWindow(env, "2026-03");
 
 		const drawn = await drawLottery(env, {
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 			applicantPool: [
 				{
 					applicationId: "app-1",
@@ -221,14 +221,14 @@ describe("lottery workflow", () => {
 			applicationId: "app-1",
 			phone: "07700900001",
 			name: "Alice",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 		});
 
 		await openWindow(env, "2026-03");
 		await closeWindow(env, "2026-03");
 
 		const drawn = await drawLottery(env, {
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 			applicantPool: [
 				{
 					applicationId: "app-1",
@@ -243,7 +243,7 @@ describe("lottery workflow", () => {
 		await env.eventStore.appendToStream("lottery-2026-04", [
 			{
 				type: "ApplicationWindowOpened",
-				data: { monthCycle: "2026-04", openedAt: "2026-04-01T00:00:00Z" },
+				data: { lotteryName: "2026-04", openedAt: "2026-04-01T00:00:00Z" },
 			},
 		]);
 
@@ -262,7 +262,7 @@ describe("lottery workflow", () => {
 			applicationId: "app-1",
 			phone: "07700900001",
 			name: "Alice",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 		});
 
 		await env.eventStore.appendToStream("application-app-1", [
@@ -271,7 +271,7 @@ describe("lottery workflow", () => {
 				data: {
 					applicationId: "app-1",
 					applicantId: toApplicantId("07700900001", "Alice"),
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					notSelectedAt: "2026-04-01T10:00:00Z",
 				},
 			},
@@ -296,7 +296,7 @@ describe("lottery workflow", () => {
 				{
 					type: "OpenApplicationWindow",
 					data: {
-						monthCycle: "auto-close-test",
+						lotteryName: "auto-close-test",
 						openedAt: "2020-01-01T00:00:00Z",
 						expectedClosingAt: "2020-01-01T00:00:01Z",
 					},
@@ -307,7 +307,7 @@ describe("lottery workflow", () => {
 
 		const before = await env.pool.withConnection(async (conn) =>
 			conn.query<{ status: string }>(
-				"SELECT status FROM lottery_windows WHERE month_cycle = ? LIMIT 1",
+				"SELECT status FROM lottery_windows WHERE lottery_name = ? LIMIT 1",
 				["auto-close-test"],
 			),
 		);
@@ -321,7 +321,7 @@ describe("lottery workflow", () => {
 
 		const after = await env.pool.withConnection(async (conn) =>
 			conn.query<{ status: string }>(
-				"SELECT status FROM lottery_windows WHERE month_cycle = ? LIMIT 1",
+				"SELECT status FROM lottery_windows WHERE lottery_name = ? LIMIT 1",
 				["auto-close-test"],
 			),
 		);
@@ -340,7 +340,7 @@ describe("lottery workflow", () => {
 				applicationId: a.id,
 				phone: a.phone,
 				name: a.name,
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			});
 		}
 
@@ -350,7 +350,7 @@ describe("lottery workflow", () => {
 
 		const windows = await env.pool.withConnection(async (conn) =>
 			conn.query<{ status: string }>(
-				"SELECT status FROM lottery_windows WHERE month_cycle = ?",
+				"SELECT status FROM lottery_windows WHERE lottery_name = ?",
 				["2026-03"],
 			),
 		);
@@ -376,7 +376,7 @@ describe("lottery workflow", () => {
 				applicationId: a.id,
 				phone: a.phone,
 				name: a.name,
-				monthCycle: "2026-04",
+				lotteryName: "2026-04",
 			});
 		}
 
@@ -387,7 +387,7 @@ describe("lottery workflow", () => {
 
 		const windows = await env.pool.withConnection(async (conn) =>
 			conn.query<{ status: string }>(
-				"SELECT status FROM lottery_windows WHERE month_cycle = ?",
+				"SELECT status FROM lottery_windows WHERE lottery_name = ?",
 				["2026-04"],
 			),
 		);

@@ -76,8 +76,8 @@ export async function SQLiteApplicantRepository(
 		): Promise<Applicant | null> {
 			return await pool.withConnection(async (conn) => {
 				const rows = await conn.query<ApplicantRow>(
-			"SELECT * FROM applicants WHERE phone = ? AND name = ? COLLATE NOCASE",
-				[phone, name],
+					"SELECT * FROM applicants WHERE phone = ? AND name = ? COLLATE NOCASE",
+					[phone, name],
 				);
 				return rows.length > 0 ? rowToApplicant(rows[0]!) : null;
 			});

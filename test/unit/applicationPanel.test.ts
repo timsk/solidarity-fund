@@ -8,7 +8,7 @@ import {
 const app: ApplicationRow = {
 	id: "app-1",
 	applicantId: "applicant-07700900001",
-	monthCycle: "2026-03",
+	lotteryName: "2026-03",
 	status: "accepted",
 	rank: null,
 	paymentPreference: "cash",

@@ -2,7 +2,7 @@ export type GrantRow = {
 	id: string;
 	applicationId: string;
 	applicantId: string;
-	monthCycle: string;
+	lotteryName: string;
 	rank: number;
 	status: string;
 	paymentPreference: string;
@@ -30,7 +30,7 @@ export type GrantRow = {
 export interface GrantRepository {
 	getById(id: string): Promise<GrantRow | null>;
 	getByApplicationId(applicationId: string): Promise<GrantRow | null>;
-	listByMonth(monthCycle: string): Promise<GrantRow[]>;
-	listDistinctMonths(): Promise<string[]>;
+	listByLottery(lotteryName: string): Promise<GrantRow[]>;
+	listDistinctLotteries(): Promise<string[]>;
 	updateNotes(id: string, notes: string): Promise<void>;
 }

@@ -9,7 +9,7 @@ type DbRow = {
 	ref: string;
 	id: string;
 	applicant_id: string;
-	month_cycle: string;
+	lottery_name: string;
 	status: string;
 	rank: number | null;
 	payment_preference: string;
@@ -37,7 +37,7 @@ function rowToApplication(row: DbRow): ApplicationRow {
 		ref: row.ref,
 		id: row.id,
 		applicantId: row.applicant_id,
-		monthCycle: row.month_cycle,
+		lotteryName: row.lottery_name,
 		status: row.status,
 		rank: row.rank,
 		paymentPreference: row.payment_preference,
@@ -91,14 +91,14 @@ export function SQLiteApplicationRepository(
 			}
 		},
 
-		async listByMonth(
-			monthCycle: string,
+		async listByLottery(
+			lotteryName: string,
 			filters?: ApplicationFilters,
 		): Promise<ApplicationRow[]> {
 			try {
 				return await pool.withConnection(async (conn) => {
-					const conditions = ["month_cycle = ?"];
-					const params: unknown[] = [monthCycle];
+					const conditions = ["lottery_name = ?"];
+					const params: unknown[] = [lotteryName];
 
 					if (filters?.status) {
 						conditions.push("status = ?");
@@ -119,13 +119,13 @@ export function SQLiteApplicationRepository(
 			}
 		},
 
-		async listDistinctMonths(): Promise<string[]> {
+		async listDistinctLotteries(): Promise<string[]> {
 			try {
 				return await pool.withConnection(async (conn) => {
-					const rows = await conn.query<{ month_cycle: string }>(
-						"SELECT DISTINCT month_cycle FROM applications ORDER BY month_cycle DESC",
+					const rows = await conn.query<{ lottery_name: string }>(
+						"SELECT DISTINCT lottery_name FROM applications ORDER BY lottery_name DESC",
 					);
-					return rows.map((r) => r.month_cycle);
+					return rows.map((r) => r.lottery_name);
 				});
 			} catch (err) {
 				if (isNoSuchTable(err)) return [];

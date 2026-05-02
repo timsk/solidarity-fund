@@ -56,6 +56,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 				<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" value="${defaultClosingValue()}" data-bind:expected-closing />
 					<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
 					</div>
+					<div id="lottery-error" class="text-red-600 text-sm font-medium" role="alert"></div>
 					<button type="submit" class="btn btn-primary">Open Applications</button>
 				</form>`;
 		case "open":
@@ -101,6 +102,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 					<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" value="${defaultClosingValue()}" data-bind:expected-closing />
 					<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
 				</div>
+				<div id="lottery-error" class="text-red-600 text-sm font-medium" role="alert"></div>
 				<button type="submit" class="btn btn-primary">Open Applications</button>
 			</form>`;
 		case "cancelled":
@@ -118,12 +120,16 @@ function actionSection(month: string, status: LotteryStatus): string {
 					<input id="expectedClosing" name="expectedClosing" type="datetime-local" required class="input" value="${defaultClosingValue()}" data-bind:expected-closing />
 					<p class="text-xs text-bark-muted mt-1">Applications automatically close when this deadline is reached. You can also close early from this page.</p>
 				</div>
+				<div id="lottery-error" class="text-red-600 text-sm font-medium" role="alert"></div>
 				<button type="submit" class="btn btn-primary">Open Applications</button>
 			</form>`;
 	}
 }
 
-export function lotteryPage(monthCycle: string, status: LotteryStatus): string {
+export function lotteryPage(
+	lotteryName: string,
+	status: LotteryStatus,
+): string {
 	const body = `<div class="max-w-2xl mx-auto px-4 py-8" data-signals='{"availablebalance": "", "reserve": "", "grantamount": "", "expectedClosing": "", "lotteryname": "", "confirmcancel": false}'>
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-3">
@@ -134,8 +140,8 @@ export function lotteryPage(monthCycle: string, status: LotteryStatus): string {
 	</div>
 
 	<div id="lottery-content" class="card p-6">
-		<h2 class="font-heading font-semibold text-lg mb-4">${escapeHtml(monthCycle)}</h2>
-		${actionSection(monthCycle, status)}
+		<h2 class="font-heading font-semibold text-lg mb-4">${escapeHtml(lotteryName)}</h2>
+		${actionSection(lotteryName, status)}
 	</div>
 </div>`;
 
@@ -143,11 +149,11 @@ export function lotteryPage(monthCycle: string, status: LotteryStatus): string {
 }
 
 export function lotteryContent(
-	monthCycle: string,
+	lotteryName: string,
 	status: LotteryStatus,
 ): string {
 	return `<div id="lottery-content" class="card p-6">
-		<h2 class="font-heading font-semibold text-lg mb-4">${escapeHtml(monthCycle)}</h2>
-		${actionSection(monthCycle, status)}
+		<h2 class="font-heading font-semibold text-lg mb-4">${escapeHtml(lotteryName)}</h2>
+		${actionSection(lotteryName, status)}
 	</div>`;
 }

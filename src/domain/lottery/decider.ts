@@ -39,7 +39,7 @@ function decideOpen(
 		{
 			type: "ApplicationWindowOpened",
 			data: {
-				monthCycle: command.data.monthCycle,
+				lotteryName: command.data.lotteryName,
 				openedAt: command.data.openedAt,
 				expectedClosingAt: command.data.expectedClosingAt,
 			},
@@ -58,7 +58,7 @@ function decideClose(
 		{
 			type: "ApplicationWindowClosed",
 			data: {
-				monthCycle: command.data.monthCycle,
+				lotteryName: command.data.lotteryName,
 				closedAt: command.data.closedAt,
 			},
 		},
@@ -78,7 +78,7 @@ function decideCancel(
 		{
 			type: "LotteryCancelled",
 			data: {
-				monthCycle: command.data.monthCycle,
+				lotteryName: command.data.lotteryName,
 				previousStatus: state.status,
 				cancelledAt: command.data.cancelledAt,
 			},
@@ -109,7 +109,7 @@ function decideDraw(command: DrawLottery, state: LotteryState): LotteryEvent[] {
 		{
 			type: "LotteryDrawn",
 			data: {
-				monthCycle: data.monthCycle,
+				lotteryName: data.lotteryName,
 				volunteerId: data.volunteerId,
 				seed: data.seed,
 				slots,
@@ -129,23 +129,23 @@ export function evolve(state: LotteryState, event: LotteryEvent): LotteryState {
 		case "ApplicationWindowOpened":
 			return {
 				status: "open",
-				monthCycle: event.data.monthCycle,
+				lotteryName: event.data.lotteryName,
 				expectedClosingAt: event.data.expectedClosingAt,
 			};
 		case "ApplicationWindowClosed":
 			return {
 				status: "windowClosed",
-				monthCycle: event.data.monthCycle,
+				lotteryName: event.data.lotteryName,
 			};
 		case "LotteryCancelled":
 			return {
 				status: "cancelled",
-				monthCycle: event.data.monthCycle,
+				lotteryName: event.data.lotteryName,
 			};
 		case "LotteryDrawn":
 			return {
 				status: "drawn",
-				monthCycle: event.data.monthCycle,
+				lotteryName: event.data.lotteryName,
 				selected: event.data.selected,
 				notSelected: event.data.notSelected,
 			};

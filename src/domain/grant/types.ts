@@ -9,7 +9,7 @@ export type CreateGrant = Command<
 		grantId: string;
 		applicationId: string;
 		applicantId: string;
-		monthCycle: string;
+		lotteryName: string;
 		rank: number;
 		paymentPreference: PaymentPreference;
 		createdAt: string;
@@ -86,6 +86,17 @@ export type RecordPayment = Command<
 	}
 >;
 
+export type PayGrant = Command<
+	"PayGrant",
+	{
+		grantId: string;
+		amount: number;
+		method: "bank" | "cash";
+		paidBy: string;
+		paidAt: string;
+	}
+>;
+
 export type ReleaseSlot = Command<
 	"ReleaseSlot",
 	{
@@ -114,7 +125,7 @@ export type GrantCommand =
 	| RejectProofOfAddress
 	| AcceptCashAlternative
 	| DeclineCashAlternative
-	| RecordPayment
+	| PayGrant
 	| ReleaseSlot
 	| RecordReimbursement;
 
@@ -126,7 +137,7 @@ export type GrantCreated = Event<
 		grantId: string;
 		applicationId: string;
 		applicantId: string;
-		monthCycle: string;
+		lotteryName: string;
 		rank: number;
 		paymentPreference: PaymentPreference;
 		createdAt: string;
@@ -207,7 +218,7 @@ export type GrantPaid = Event<
 		grantId: string;
 		applicationId: string;
 		applicantId: string;
-		monthCycle: string;
+		lotteryName: string;
 		amount: number;
 		method: "bank" | "cash";
 		paidBy: string;
@@ -221,7 +232,7 @@ export type SlotReleased = Event<
 		grantId: string;
 		applicationId: string;
 		applicantId: string;
-		monthCycle: string;
+		lotteryName: string;
 		reason: string;
 		releasedBy: string;
 		releasedAt: string;
@@ -259,7 +270,7 @@ type GrantCore = {
 	grantId: string;
 	applicationId: string;
 	applicantId: string;
-	monthCycle: string;
+	lotteryName: string;
 	rank: number;
 	volunteerId?: string;
 };

@@ -21,21 +21,21 @@ function makePool(n: number): LotteryApplicant[] {
 	}));
 }
 
-function openCommand(monthCycle = "2026-03"): OpenApplicationWindow {
+function openCommand(lotteryName = "2026-03"): OpenApplicationWindow {
 	return {
 		type: "OpenApplicationWindow",
 		data: {
-			monthCycle,
+			lotteryName,
 			openedAt: "2026-03-01T00:00:00Z",
 			expectedClosingAt: "2026-03-31T23:59:59Z",
 		},
 	};
 }
 
-function closeCommand(monthCycle = "2026-03"): CloseApplicationWindow {
+function closeCommand(lotteryName = "2026-03"): CloseApplicationWindow {
 	return {
 		type: "CloseApplicationWindow",
-		data: { monthCycle, closedAt: "2026-03-31T23:59:59Z" },
+		data: { lotteryName, closedAt: "2026-03-31T23:59:59Z" },
 	};
 }
 
@@ -45,7 +45,7 @@ function drawCommand(
 	return {
 		type: "DrawLottery",
 		data: {
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 			volunteerId: "vol-1",
 			availableBalance: 200,
 			reserve: 0,
@@ -58,10 +58,10 @@ function drawCommand(
 	};
 }
 
-function cancelCommand(monthCycle = "2026-03"): CancelLottery {
+function cancelCommand(lotteryName = "2026-03"): CancelLottery {
 	return {
 		type: "CancelLottery",
-		data: { monthCycle, cancelledAt: "2026-03-15T12:00:00Z" },
+		data: { lotteryName, cancelledAt: "2026-03-15T12:00:00Z" },
 	};
 }
 
@@ -71,14 +71,14 @@ describe("lottery decider", () => {
 			const events = decide(openCommand(), initialState());
 			expect(events).toHaveLength(1);
 			expect(events[0]!.type).toBe("ApplicationWindowOpened");
-			expect(events[0]!.data.monthCycle).toBe("2026-03");
+			expect(events[0]!.data.lotteryName).toBe("2026-03");
 		});
 
 		test("cannot open already-open window", () => {
 			const state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
 				data: {
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					openedAt: "2026-03-01T00:00:00Z",
 					expectedClosingAt: "2026-03-31T23:59:59Z",
 				},
@@ -92,7 +92,7 @@ describe("lottery decider", () => {
 			const state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
 				data: {
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					openedAt: "2026-03-01T00:00:00Z",
 					expectedClosingAt: "2026-03-31T23:59:59Z",
 				},
@@ -100,7 +100,7 @@ describe("lottery decider", () => {
 			const events = decide(closeCommand(), state);
 			expect(events).toHaveLength(1);
 			expect(events[0]!.type).toBe("ApplicationWindowClosed");
-			expect(events[0]!.data.monthCycle).toBe("2026-03");
+			expect(events[0]!.data.lotteryName).toBe("2026-03");
 		});
 
 		test("cannot close from initial state", () => {
@@ -113,14 +113,14 @@ describe("lottery decider", () => {
 			let state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
 				data: {
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					openedAt: "2026-03-01T00:00:00Z",
 					expectedClosingAt: "2026-03-31T23:59:59Z",
 				},
 			});
 			state = evolve(state, {
 				type: "ApplicationWindowClosed",
-				data: { monthCycle: "2026-03", closedAt: "2026-03-31T23:59:59Z" },
+				data: { lotteryName: "2026-03", closedAt: "2026-03-31T23:59:59Z" },
 			});
 			expect(() => decide(closeCommand(), state)).toThrow(IllegalStateError);
 		});
@@ -131,7 +131,7 @@ describe("lottery decider", () => {
 			const state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
 				data: {
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					openedAt: "2026-03-01T00:00:00Z",
 					expectedClosingAt: "2026-03-31T23:59:59Z",
 				},
@@ -139,7 +139,7 @@ describe("lottery decider", () => {
 			const events = decide(cancelCommand(), state);
 			expect(events).toHaveLength(1);
 			expect(events[0]!.type).toBe("LotteryCancelled");
-			expect(events[0]!.data.monthCycle).toBe("2026-03");
+			expect(events[0]!.data.lotteryName).toBe("2026-03");
 			expect(events[0]!.data.previousStatus).toBe("open");
 		});
 
@@ -147,14 +147,14 @@ describe("lottery decider", () => {
 			let state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
 				data: {
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					openedAt: "2026-03-01T00:00:00Z",
 					expectedClosingAt: "2026-03-31T23:59:59Z",
 				},
 			});
 			state = evolve(state, {
 				type: "ApplicationWindowClosed",
-				data: { monthCycle: "2026-03", closedAt: "2026-03-31T23:59:59Z" },
+				data: { lotteryName: "2026-03", closedAt: "2026-03-31T23:59:59Z" },
 			});
 			const events = decide(cancelCommand(), state);
 			expect(events).toHaveLength(1);
@@ -171,7 +171,7 @@ describe("lottery decider", () => {
 		test("cannot cancel from drawn state", () => {
 			const state: LotteryState = {
 				status: "drawn",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 				selected: [],
 				notSelected: [],
 			};
@@ -182,7 +182,7 @@ describe("lottery decider", () => {
 			let state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
 				data: {
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					openedAt: "2026-03-01T00:00:00Z",
 					expectedClosingAt: "2026-03-31T23:59:59Z",
 				},
@@ -190,7 +190,7 @@ describe("lottery decider", () => {
 			state = evolve(state, {
 				type: "LotteryCancelled",
 				data: {
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					previousStatus: "open",
 					cancelledAt: "2026-03-15T12:00:00Z",
 				},
@@ -209,7 +209,7 @@ describe("lottery decider", () => {
 		test("windowClosed → LotteryDrawn with correct slot count", () => {
 			const state: LotteryState = {
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			};
 			const events = decide(drawCommand(), state);
 			expect(events).toHaveLength(1);
@@ -222,7 +222,7 @@ describe("lottery decider", () => {
 		test("selected entries have rank 1..N", () => {
 			const state: LotteryState = {
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			};
 			const events = decide(drawCommand(), state);
 			const ranks = events[0]!.data.selected.map(
@@ -234,7 +234,7 @@ describe("lottery decider", () => {
 		test("slots capped by pool size", () => {
 			const state: LotteryState = {
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			};
 			const events = decide(
 				drawCommand({
@@ -251,7 +251,7 @@ describe("lottery decider", () => {
 		test("reserve reduces available slots", () => {
 			const state: LotteryState = {
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			};
 			const events = decide(
 				drawCommand({ availableBalance: 200, reserve: 80 }),
@@ -264,7 +264,7 @@ describe("lottery decider", () => {
 		test("zero slots when balance <= reserve", () => {
 			const state: LotteryState = {
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			};
 			const events = decide(
 				drawCommand({ availableBalance: 50, reserve: 50 }),
@@ -278,7 +278,7 @@ describe("lottery decider", () => {
 		test("empty pool → LotteryDrawn with no selections", () => {
 			const state: LotteryState = {
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			};
 			const events = decide(drawCommand({ applicantPool: [] }), state);
 			expect(events[0]!.data.selected).toHaveLength(0);
@@ -288,7 +288,7 @@ describe("lottery decider", () => {
 		test("cannot draw twice", () => {
 			const closed: LotteryState = {
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			};
 			const events = decide(drawCommand(), closed);
 			const drawn = evolve(closed, events[0]!);
@@ -298,7 +298,7 @@ describe("lottery decider", () => {
 		test("draw is deterministic for same seed", () => {
 			const state: LotteryState = {
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			};
 			const cmd = drawCommand();
 			const events1 = decide(cmd, state);
@@ -312,14 +312,14 @@ describe("lottery decider", () => {
 			const state = evolve(initialState(), {
 				type: "ApplicationWindowOpened",
 				data: {
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					openedAt: "2026-03-01T00:00:00Z",
 					expectedClosingAt: "2026-03-31T23:59:59Z",
 				},
 			});
 			expect(state).toEqual({
 				status: "open",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 				expectedClosingAt: "2026-03-31T23:59:59Z",
 			});
 		});
@@ -327,21 +327,21 @@ describe("lottery decider", () => {
 		test("ApplicationWindowClosed → windowClosed", () => {
 			const state = evolve(initialState(), {
 				type: "ApplicationWindowClosed",
-				data: { monthCycle: "2026-03", closedAt: "2026-03-31T23:59:59Z" },
+				data: { lotteryName: "2026-03", closedAt: "2026-03-31T23:59:59Z" },
 			});
 			expect(state).toEqual({
 				status: "windowClosed",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			});
 		});
 
 		test("LotteryDrawn → drawn with selections", () => {
 			const state = evolve(
-				{ status: "windowClosed", monthCycle: "2026-03" },
+				{ status: "windowClosed", lotteryName: "2026-03" },
 				{
 					type: "LotteryDrawn",
 					data: {
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						volunteerId: "vol-1",
 						seed: "s",
 						slots: 1,
@@ -361,13 +361,13 @@ describe("lottery decider", () => {
 			const state = evolve(
 				{
 					status: "open",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					expectedClosingAt: "2026-03-31T23:59:59Z",
 				},
 				{
 					type: "LotteryCancelled",
 					data: {
-						monthCycle: "2026-03",
+						lotteryName: "2026-03",
 						previousStatus: "open",
 						cancelledAt: "2026-03-15T12:00:00Z",
 					},
@@ -375,7 +375,7 @@ describe("lottery decider", () => {
 			);
 			expect(state).toEqual({
 				status: "cancelled",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 			});
 		});
 	});

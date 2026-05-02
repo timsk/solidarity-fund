@@ -7,21 +7,21 @@ import {
 } from "../../src/domain/application/decider.ts";
 import type { ApplicationState } from "../../src/domain/application/types.ts";
 
-function acceptedState(monthCycle = "2026-03"): ApplicationState {
+function acceptedState(lotteryName = "2026-03"): ApplicationState {
 	return {
 		status: "accepted",
 		applicationId: "app-1",
 		applicantId: "applicant-1",
-		monthCycle,
+		lotteryName,
 	};
 }
 
-function confirmedState(monthCycle = "2026-03"): ApplicationState {
+function confirmedState(lotteryName = "2026-03"): ApplicationState {
 	return {
 		status: "confirmed",
 		applicationId: "app-1",
 		applicantId: "applicant-1",
-		monthCycle,
+		lotteryName,
 	};
 }
 
@@ -32,7 +32,7 @@ describe("application selection", () => {
 				type: "SelectApplication",
 				data: {
 					applicationId: "app-1",
-					lotteryMonthCycle: "2026-03",
+					lotteryName: "2026-03",
 					rank: 1,
 					selectedAt: "2026-04-01T10:00:00Z",
 				},
@@ -54,7 +54,7 @@ describe("application selection", () => {
 				type: "SelectApplication",
 				data: {
 					applicationId: "app-1",
-					lotteryMonthCycle: "2026-03",
+					lotteryName: "2026-03",
 					rank: 2,
 					selectedAt: "2026-04-01T10:00:00Z",
 				},
@@ -71,7 +71,7 @@ describe("application selection", () => {
 				type: "RejectFromLottery",
 				data: {
 					applicationId: "app-1",
-					lotteryMonthCycle: "2026-03",
+					lotteryName: "2026-03",
 					rejectedAt: "2026-04-01T10:00:00Z",
 				},
 			},
@@ -103,7 +103,7 @@ describe("application selection", () => {
 			status: "selected",
 			applicationId: "app-1",
 			applicantId: "applicant-1",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 			rank: 1,
 		};
 		expect(() =>
@@ -112,7 +112,7 @@ describe("application selection", () => {
 					type: "SelectApplication",
 					data: {
 						applicationId: "app-1",
-						lotteryMonthCycle: "2026-03",
+						lotteryName: "2026-03",
 						rank: 1,
 						selectedAt: "2026-04-01T10:00:00Z",
 					},
@@ -128,7 +128,7 @@ describe("application selection", () => {
 			data: {
 				applicationId: "app-1",
 				applicantId: "applicant-1",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 				rank: 1,
 				selectedAt: "2026-04-01T10:00:00Z",
 			},
@@ -137,7 +137,7 @@ describe("application selection", () => {
 			status: "selected",
 			applicationId: "app-1",
 			applicantId: "applicant-1",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 			rank: 1,
 		});
 	});
@@ -148,7 +148,7 @@ describe("application selection", () => {
 			data: {
 				applicationId: "app-1",
 				applicantId: "applicant-1",
-				monthCycle: "2026-03",
+				lotteryName: "2026-03",
 				notSelectedAt: "2026-04-01T10:00:00Z",
 			},
 		});
@@ -156,7 +156,7 @@ describe("application selection", () => {
 			status: "not_selected",
 			applicationId: "app-1",
 			applicantId: "applicant-1",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 		});
 	});
 });
@@ -223,7 +223,7 @@ describe("cancel due to lottery", () => {
 			status: "selected",
 			applicationId: "app-1",
 			applicantId: "applicant-1",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 			rank: 1,
 		};
 		expect(() =>
@@ -232,7 +232,7 @@ describe("cancel due to lottery", () => {
 					type: "ApplicationLotteryCancelled",
 					data: {
 						applicationId: "app-1",
-						lotteryMonthCycle: "2026-03",
+						lotteryName: "2026-03",
 						cancelledAt: "2026-04-01T10:00:00Z",
 					},
 				},
@@ -246,7 +246,7 @@ describe("cancel due to lottery", () => {
 			status: "not_selected",
 			applicationId: "app-1",
 			applicantId: "applicant-1",
-			monthCycle: "2026-03",
+			lotteryName: "2026-03",
 		};
 		expect(() =>
 			decide(
@@ -254,7 +254,7 @@ describe("cancel due to lottery", () => {
 					type: "ApplicationLotteryCancelled",
 					data: {
 						applicationId: "app-1",
-						lotteryMonthCycle: "2026-03",
+						lotteryName: "2026-03",
 						cancelledAt: "2026-04-01T10:00:00Z",
 					},
 				},
@@ -268,7 +268,7 @@ describe("cancel due to lottery", () => {
 			type: "ApplicationLotteryCancelled",
 			data: {
 				applicationId: "app-1",
-				lotteryMonthCycle: "2026-03",
+				lotteryName: "2026-03",
 				previousStatus: "accepted",
 				cancelledAt: "2026-04-01T10:00:00Z",
 			},

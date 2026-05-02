@@ -12,14 +12,14 @@ const acceptedState: ApplicationState = {
 	status: "accepted",
 	applicationId: APP_ID,
 	applicantId: APPLICANT_ID,
-	monthCycle: MONTH,
+	lotteryName: MONTH,
 };
 
 const confirmedState: ApplicationState = {
 	status: "confirmed",
 	applicationId: APP_ID,
 	applicantId: APPLICANT_ID,
-	monthCycle: MONTH,
+	lotteryName: MONTH,
 };
 
 const rejectedState: ApplicationState = {
@@ -33,7 +33,7 @@ const flaggedState: ApplicationState = {
 	status: "flagged",
 	applicationId: APP_ID,
 	applicantId: APPLICANT_ID,
-	monthCycle: MONTH,
+	lotteryName: MONTH,
 	reason: "Phone matches but name differs",
 };
 
@@ -58,7 +58,7 @@ function makeSubmitCommand(overrides?: {
 			identity: { phone: "07700900000", name: "Jane Doe" },
 			paymentPreference: "bank" as const,
 			meetingDetails: { place: "Town Hall" },
-			monthCycle: MONTH,
+			lotteryName: MONTH,
 			identityResolution: overrides?.identityResolution ?? {
 				type: "new" as const,
 			},
@@ -286,7 +286,7 @@ describe("application decider", () => {
 						status: "submitted",
 						applicationId: APP_ID,
 						applicantId: APPLICANT_ID,
-						monthCycle: MONTH,
+						lotteryName: MONTH,
 					},
 				),
 			).toThrow(IllegalStateError);
@@ -300,7 +300,7 @@ describe("application decider", () => {
 					type: "SelectApplication",
 					data: {
 						applicationId: APP_ID,
-						lotteryMonthCycle: MONTH,
+						lotteryName: MONTH,
 						rank: 1,
 						selectedAt: NOW,
 					},
@@ -319,7 +319,7 @@ describe("application decider", () => {
 					type: "SelectApplication",
 					data: {
 						applicationId: APP_ID,
-						lotteryMonthCycle: MONTH,
+						lotteryName: MONTH,
 						rank: 2,
 						selectedAt: NOW,
 					},
@@ -328,7 +328,7 @@ describe("application decider", () => {
 					status: "confirmed",
 					applicationId: APP_ID,
 					applicantId: APPLICANT_ID,
-					monthCycle: MONTH,
+					lotteryName: MONTH,
 				},
 			);
 
@@ -342,7 +342,7 @@ describe("application decider", () => {
 						type: "SelectApplication",
 						data: {
 							applicationId: APP_ID,
-							lotteryMonthCycle: MONTH,
+							lotteryName: MONTH,
 							rank: 1,
 							selectedAt: NOW,
 						},
@@ -351,7 +351,7 @@ describe("application decider", () => {
 						status: "submitted",
 						applicationId: APP_ID,
 						applicantId: APPLICANT_ID,
-						monthCycle: MONTH,
+						lotteryName: MONTH,
 					},
 				),
 			).toThrow(IllegalStateError);
@@ -365,7 +365,7 @@ describe("application decider", () => {
 					type: "RejectFromLottery",
 					data: {
 						applicationId: APP_ID,
-						lotteryMonthCycle: MONTH,
+						lotteryName: MONTH,
 						rejectedAt: NOW,
 					},
 				},
@@ -383,7 +383,7 @@ describe("application decider", () => {
 						type: "RejectFromLottery",
 						data: {
 							applicationId: APP_ID,
-							lotteryMonthCycle: MONTH,
+							lotteryName: MONTH,
 							rejectedAt: NOW,
 						},
 					},
@@ -391,7 +391,7 @@ describe("application decider", () => {
 						status: "submitted",
 						applicationId: APP_ID,
 						applicantId: APPLICANT_ID,
-						monthCycle: MONTH,
+						lotteryName: MONTH,
 					},
 				),
 			).toThrow(IllegalStateError);
@@ -496,7 +496,7 @@ describe("application decider", () => {
 					identity: { phone: "07700900000", name: "Jane Doe" },
 					paymentPreference: "bank",
 					meetingDetails: { place: "Town Hall" },
-					monthCycle: MONTH,
+					lotteryName: MONTH,
 					submittedAt: NOW,
 				},
 			});
@@ -510,14 +510,14 @@ describe("application decider", () => {
 					status: "submitted",
 					applicationId: APP_ID,
 					applicantId: APPLICANT_ID,
-					monthCycle: MONTH,
+					lotteryName: MONTH,
 				},
 				{
 					type: "ApplicationAccepted",
 					data: {
 						applicationId: APP_ID,
 						applicantId: APPLICANT_ID,
-						monthCycle: MONTH,
+						lotteryName: MONTH,
 						acceptedAt: NOW,
 					},
 				},
@@ -532,7 +532,7 @@ describe("application decider", () => {
 				data: {
 					applicationId: APP_ID,
 					applicantId: APPLICANT_ID,
-					monthCycle: MONTH,
+					lotteryName: MONTH,
 					rank: 3,
 					selectedAt: NOW,
 				},
@@ -550,7 +550,7 @@ describe("application decider", () => {
 				data: {
 					applicationId: APP_ID,
 					applicantId: APPLICANT_ID,
-					monthCycle: MONTH,
+					lotteryName: MONTH,
 					notSelectedAt: NOW,
 				},
 			});
@@ -565,7 +565,7 @@ describe("application decider", () => {
 					applicationId: APP_ID,
 					applicantId: APPLICANT_ID,
 					volunteerId: "vol-1",
-					monthCycle: MONTH,
+					lotteryName: MONTH,
 					reason: "Reverted previous confirmed decision",
 					revertedAt: NOW,
 				},

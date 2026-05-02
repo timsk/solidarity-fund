@@ -40,7 +40,7 @@ export type SubmitApplication = Command<
 		identity: ApplicantIdentity;
 		paymentPreference: PaymentPreference;
 		meetingDetails?: MeetingDetails;
-		monthCycle: string;
+		lotteryName: string;
 		identityResolution: IdentityResolution;
 		eligibility: EligibilityResult;
 		submittedAt: string;
@@ -64,7 +64,7 @@ export type SelectApplication = Command<
 	"SelectApplication",
 	{
 		applicationId: string;
-		lotteryMonthCycle: string;
+		lotteryName: string;
 		rank: number;
 		selectedAt: string;
 	}
@@ -74,7 +74,7 @@ export type RejectFromLottery = Command<
 	"RejectFromLottery",
 	{
 		applicationId: string;
-		lotteryMonthCycle: string;
+		lotteryName: string;
 		rejectedAt: string;
 	}
 >;
@@ -83,7 +83,7 @@ export type CancelApplicationDueToLottery = Command<
 	"ApplicationLotteryCancelled",
 	{
 		applicationId: string;
-		lotteryMonthCycle: string;
+		lotteryName: string;
 		cancelledAt: string;
 	}
 >;
@@ -107,7 +107,7 @@ export type ApplicationSubmitted = Event<
 		identity: ApplicantIdentity;
 		paymentPreference: PaymentPreference;
 		meetingDetails?: MeetingDetails;
-		monthCycle: string;
+		lotteryName: string;
 		submittedAt: string;
 		bankDetails?: BankDetails;
 	}
@@ -118,7 +118,7 @@ export type ApplicationAccepted = Event<
 	{
 		applicationId: string;
 		applicantId: string;
-		monthCycle: string;
+		lotteryName: string;
 		acceptedAt: string;
 	}
 >;
@@ -129,7 +129,7 @@ export type ApplicationConfirmed = Event<
 		applicationId: string;
 		applicantId: string;
 		volunteerId: string;
-		monthCycle: string;
+		lotteryName: string;
 		confirmedAt: string;
 	}
 >;
@@ -142,7 +142,7 @@ export type ApplicationRejected = Event<
 		reason: "cooldown" | "duplicate" | "identity_mismatch" | "window_closed";
 		detail: string;
 		volunteerId?: string;
-		monthCycle: string;
+		lotteryName: string;
 		rejectedAt: string;
 	}
 >;
@@ -153,7 +153,7 @@ export type ApplicationFlaggedForReview = Event<
 		applicationId: string;
 		applicantId: string;
 		reason: string;
-		monthCycle: string;
+		lotteryName: string;
 		flaggedAt: string;
 	}
 >;
@@ -163,7 +163,7 @@ export type ApplicationSelected = Event<
 	{
 		applicationId: string;
 		applicantId: string;
-		monthCycle: string;
+		lotteryName: string;
 		rank: number;
 		selectedAt: string;
 	}
@@ -174,7 +174,7 @@ export type ApplicationNotSelected = Event<
 	{
 		applicationId: string;
 		applicantId: string;
-		monthCycle: string;
+		lotteryName: string;
 		notSelectedAt: string;
 	}
 >;
@@ -183,7 +183,7 @@ export type ApplicationLotteryCancelled = Event<
 	"ApplicationLotteryCancelled",
 	{
 		applicationId: string;
-		lotteryMonthCycle: string;
+		lotteryName: string;
 		previousStatus: string;
 		cancelledAt: string;
 	}
@@ -195,7 +195,7 @@ export type ApplicationReviewReverted = Event<
 		applicationId: string;
 		applicantId: string;
 		volunteerId: string;
-		monthCycle: string;
+		lotteryName: string;
 		reason: string;
 		revertedAt: string;
 	}
@@ -230,13 +230,13 @@ export type ApplicationState =
 			status: "submitted";
 			applicationId: string;
 			applicantId: string;
-			monthCycle: string;
+			lotteryName: string;
 	  }
 	| {
 			status: "accepted";
 			applicationId: string;
 			applicantId: string;
-			monthCycle: string;
+			lotteryName: string;
 	  }
 	| {
 			status: "rejected";
@@ -248,27 +248,27 @@ export type ApplicationState =
 			status: "confirmed";
 			applicationId: string;
 			applicantId: string;
-			monthCycle: string;
+			lotteryName: string;
 	  }
 	| {
 			status: "flagged";
 			applicationId: string;
 			applicantId: string;
-			monthCycle: string;
+			lotteryName: string;
 			reason: string;
 	  }
 	| {
 			status: "selected";
 			applicationId: string;
 			applicantId: string;
-			monthCycle: string;
+			lotteryName: string;
 			rank: number;
 	  }
 	| {
 			status: "not_selected";
 			applicationId: string;
 			applicantId: string;
-			monthCycle: string;
+			lotteryName: string;
 	  }
 	| {
 			status: "cancelled";

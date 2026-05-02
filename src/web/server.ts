@@ -32,7 +32,11 @@ import { createLogsRoutes } from "./routes/logs.ts";
 import { createLotteryRoutes } from "./routes/lottery.ts";
 import { createOutboxRoutes } from "./routes/outbox.ts";
 import { createStatusRoutes } from "./routes/status.ts";
-import { autoCloseExpiredLottery, currentMonthCycle } from "./routes/utils.ts";
+import {
+	autoCloseExpiredLottery,
+	defaultLotteryName,
+	getCurrentLotteryName,
+} from "./routes/utils.ts";
 import { createVolunteerRoutes } from "./routes/volunteers.ts";
 
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -682,7 +686,7 @@ export async function startServer(
 					});
 				}
 				const lotteryName =
-					String(signals.lotteryname ?? "").trim() || currentMonthCycle();
+					String(signals.lotteryname ?? "").trim() || defaultLotteryName();
 				return lotteryRoutes.handleOpen(lotteryName, expectedClosing);
 			}
 			if (url.pathname === "/lottery/close" && req.method === "POST") {

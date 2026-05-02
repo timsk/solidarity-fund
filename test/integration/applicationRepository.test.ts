@@ -25,7 +25,7 @@ describe("SQLiteApplicationRepository", () => {
 
 	async function seedApplication(
 		id: string,
-		monthCycle: string,
+		lotteryName: string,
 		name: string,
 		phone: string,
 	) {
@@ -38,7 +38,7 @@ describe("SQLiteApplicationRepository", () => {
 					identity: { phone, name },
 					paymentPreference: "cash",
 					meetingDetails: { place: "Mill Road" },
-					monthCycle,
+					lotteryName,
 					submittedAt: "2026-03-01T10:00:00Z",
 				},
 			},
@@ -47,7 +47,7 @@ describe("SQLiteApplicationRepository", () => {
 				data: {
 					applicationId: id,
 					applicantId: `applicant-${phone}`,
-					monthCycle,
+					lotteryName,
 					acceptedAt: "2026-03-01T10:00:00Z",
 				},
 			},
@@ -86,19 +86,19 @@ describe("SQLiteApplicationRepository", () => {
 		expect(app).toBeNull();
 	});
 
-	test("listByMonth returns applications for given month", async () => {
+	test("		listByLottery returns applications for given month", async () => {
 		await seedApplication("app-1", "2026-03", "Alice", "07700900001");
 		await seedApplication("app-2", "2026-03", "Bob", "07700900002");
 		await seedApplication("app-3", "2026-04", "Charlie", "07700900003");
 
-		const march = await repo.listByMonth("2026-03");
+		const march = await repo.listByLottery("2026-03");
 		expect(march).toHaveLength(2);
 
-		const april = await repo.listByMonth("2026-04");
+		const april = await repo.listByLottery("2026-04");
 		expect(april).toHaveLength(1);
 	});
 
-	test("listByMonth filters by status", async () => {
+	test("		listByLottery filters by status", async () => {
 		await seedApplication("app-1", "2026-03", "Alice", "07700900001");
 		await seedApplication("app-2", "2026-03", "Bob", "07700900002");
 		// Reject app-2
@@ -110,22 +110,26 @@ describe("SQLiteApplicationRepository", () => {
 					applicantId: "applicant-07700900002",
 					reason: "cooldown",
 					detail: "test",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					rejectedAt: "2026-03-02T10:00:00Z",
 				},
 			},
 		]);
 
-		const accepted = await repo.listByMonth("2026-03", { status: "accepted" });
+		const accepted = await repo.listByLottery("2026-03", {
+			status: "accepted",
+		});
 		expect(accepted).toHaveLength(1);
 		expect(accepted[0]!.name).toBe("Alice");
 
-		const rejected = await repo.listByMonth("2026-03", { status: "rejected" });
+		const rejected = await repo.listByLottery("2026-03", {
+			status: "rejected",
+		});
 		expect(rejected).toHaveLength(1);
 		expect(rejected[0]!.name).toBe("Bob");
 	});
 
-	test("listByMonth filters by payment preference", async () => {
+	test("		listByLottery filters by payment preference", async () => {
 		await seedApplication("app-1", "2026-03", "Alice", "07700900001");
 		// app-1 is seeded with "cash", add a "bank" one
 		await eventStore.appendToStream("application-app-2", [
@@ -137,7 +141,7 @@ describe("SQLiteApplicationRepository", () => {
 					identity: { phone: "07700900002", name: "Bob" },
 					paymentPreference: "bank",
 					meetingDetails: { place: "Mill Road" },
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					submittedAt: "2026-03-01T10:00:00Z",
 				},
 			},
@@ -146,38 +150,38 @@ describe("SQLiteApplicationRepository", () => {
 				data: {
 					applicationId: "app-2",
 					applicantId: "applicant-07700900002",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					acceptedAt: "2026-03-01T10:00:00Z",
 				},
 			},
 		]);
 
-		const cash = await repo.listByMonth("2026-03", {
+		const cash = await repo.listByLottery("2026-03", {
 			paymentPreference: "cash",
 		});
 		expect(cash).toHaveLength(1);
 		expect(cash[0]!.name).toBe("Alice");
 
-		const bank = await repo.listByMonth("2026-03", {
+		const bank = await repo.listByLottery("2026-03", {
 			paymentPreference: "bank",
 		});
 		expect(bank).toHaveLength(1);
 		expect(bank[0]!.name).toBe("Bob");
 	});
 
-	test("listByMonth with no filters returns all", async () => {
+	test("		listByLottery with no filters returns all", async () => {
 		await seedApplication("app-1", "2026-03", "Alice", "07700900001");
 		await seedApplication("app-2", "2026-03", "Bob", "07700900002");
-		const all = await repo.listByMonth("2026-03", {});
+		const all = await repo.listByLottery("2026-03", {});
 		expect(all).toHaveLength(2);
 	});
 
-	test("listDistinctMonths returns sorted month cycles", async () => {
+	test("listDistinctLotteries returns sorted month cycles", async () => {
 		await seedApplication("app-1", "2026-03", "Alice", "07700900001");
 		await seedApplication("app-2", "2026-04", "Bob", "07700900002");
 		await seedApplication("app-3", "2026-03", "Charlie", "07700900003");
 
-		const months = await repo.listDistinctMonths();
+		const months = await repo.listDistinctLotteries();
 		expect(months).toEqual(["2026-04", "2026-03"]);
 	});
 });

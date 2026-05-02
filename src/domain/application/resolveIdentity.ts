@@ -1,6 +1,6 @@
 import type { ApplicantRepository } from "../applicant/repository.ts";
-import type { IdentityResolution } from "./types.ts";
 import { normalizeName } from "./normalizeName.ts";
+import type { IdentityResolution } from "./types.ts";
 
 export async function resolveIdentity(
 	phone: string,
@@ -8,7 +8,10 @@ export async function resolveIdentity(
 	applicantRepo: ApplicantRepository,
 ): Promise<IdentityResolution> {
 	const normalizedName = normalizeName(name);
-	const exactMatch = await applicantRepo.getByPhoneAndName(phone, normalizedName);
+	const exactMatch = await applicantRepo.getByPhoneAndName(
+		phone,
+		normalizedName,
+	);
 
 	if (exactMatch) {
 		return { type: "matched", applicantId: exactMatch.id };

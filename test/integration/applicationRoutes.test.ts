@@ -42,7 +42,7 @@ describe("application routes", () => {
 					identity: { phone: "07700900001", name: "Alice" },
 					paymentPreference: "bank",
 					meetingDetails: { place: "Mill Road" },
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					submittedAt: "2026-03-01T00:00:00Z",
 				},
 			},
@@ -51,7 +51,7 @@ describe("application routes", () => {
 				data: {
 					applicationId: "app-1",
 					applicantId: "applicant-1",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					acceptedAt: "2026-03-01T00:00:01Z",
 				},
 			},

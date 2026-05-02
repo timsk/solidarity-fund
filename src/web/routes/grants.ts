@@ -24,7 +24,7 @@ import {
 	ServerSentEventGenerator,
 	sseResponse,
 } from "../sse.ts";
-import { getCurrentLotteryMonthCycle } from "./utils.ts";
+import { getCurrentLotteryName } from "./utils.ts";
 
 export function createGrantRoutes(
 	grantRepo: GrantRepository,
@@ -33,8 +33,8 @@ export function createGrantRoutes(
 	eventStore: SQLiteEventStore,
 	pool: ReturnType<typeof SQLiteConnectionPool>,
 ) {
-	async function refreshBoard(monthCycle: string) {
-		const grants = await grantRepo.listByMonth(monthCycle);
+	async function refreshBoard(lotteryName: string) {
+		const grants = await grantRepo.listByLottery(lotteryName);
 		return grantsBoard(grants);
 	}
 
@@ -51,16 +51,16 @@ export function createGrantRoutes(
 		if (!grant) return new Response("Not found", { status: 404 });
 		const panel = await showPanel(grantId);
 		if (!panel) return new Response("Not found", { status: 404 });
-		const board = await refreshBoard(grant.monthCycle);
+		const board = await refreshBoard(grant.lotteryName);
 		return sseResponse(patchElements(panel), patchElements(board));
 	}
 
 	return {
 		async list(month?: string): Promise<Response> {
-			const months = await grantRepo.listDistinctMonths();
+			const months = await grantRepo.listDistinctLotteries();
 			const currentMonth =
-				month ?? months[0] ?? (await getCurrentLotteryMonthCycle(pool));
-			const grants = await grantRepo.listByMonth(currentMonth);
+				month ?? months[0] ?? (await getCurrentLotteryName(pool));
+			const grants = await grantRepo.listByLottery(currentMonth);
 			return new Response(grantsPage(grants, months, currentMonth), {
 				headers: { "Content-Type": "text/html" },
 			});
@@ -133,7 +133,7 @@ export function createGrantRoutes(
 							grantId,
 							applicationId: grantId,
 							applicantId: grant.applicantId,
-							monthCycle: grant.monthCycle,
+							lotteryName: grant.lotteryName,
 							reason: "Cash alternative declined",
 							releasedBy: "system",
 							releasedAt: new Date().toISOString(),
@@ -188,7 +188,7 @@ export function createGrantRoutes(
 							grantId,
 							applicationId: grantId,
 							applicantId: grant.applicantId,
-							monthCycle: grant.monthCycle,
+							lotteryName: grant.lotteryName,
 							reason,
 							releasedBy: volunteerId,
 							releasedAt: new Date().toISOString(),

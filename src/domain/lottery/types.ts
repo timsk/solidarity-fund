@@ -16,7 +16,7 @@ export type LotterySelection = LotteryApplicant & {
 export type OpenApplicationWindow = Command<
 	"OpenApplicationWindow",
 	{
-		monthCycle: string;
+		lotteryName: string;
 		openedAt: string;
 		expectedClosingAt: string;
 	}
@@ -25,7 +25,7 @@ export type OpenApplicationWindow = Command<
 export type CloseApplicationWindow = Command<
 	"CloseApplicationWindow",
 	{
-		monthCycle: string;
+		lotteryName: string;
 		closedAt: string;
 	}
 >;
@@ -33,7 +33,7 @@ export type CloseApplicationWindow = Command<
 export type CancelLottery = Command<
 	"CancelLottery",
 	{
-		monthCycle: string;
+		lotteryName: string;
 		cancelledAt: string;
 	}
 >;
@@ -41,7 +41,7 @@ export type CancelLottery = Command<
 export type DrawLottery = Command<
 	"DrawLottery",
 	{
-		monthCycle: string;
+		lotteryName: string;
 		volunteerId: string;
 		availableBalance: number;
 		reserve: number;
@@ -63,7 +63,7 @@ export type LotteryCommand =
 export type ApplicationWindowOpened = Event<
 	"ApplicationWindowOpened",
 	{
-		monthCycle: string;
+		lotteryName: string;
 		openedAt: string;
 		expectedClosingAt: string;
 	}
@@ -72,7 +72,7 @@ export type ApplicationWindowOpened = Event<
 export type ApplicationWindowClosed = Event<
 	"ApplicationWindowClosed",
 	{
-		monthCycle: string;
+		lotteryName: string;
 		closedAt: string;
 	}
 >;
@@ -80,7 +80,7 @@ export type ApplicationWindowClosed = Event<
 export type LotteryCancelled = Event<
 	"LotteryCancelled",
 	{
-		monthCycle: string;
+		lotteryName: string;
 		previousStatus: string;
 		cancelledAt: string;
 	}
@@ -89,7 +89,7 @@ export type LotteryCancelled = Event<
 export type LotteryDrawn = Event<
 	"LotteryDrawn",
 	{
-		monthCycle: string;
+		lotteryName: string;
 		volunteerId: string;
 		seed: string;
 		slots: number;
@@ -114,12 +114,12 @@ type LotteryEventType = LotteryEvent["type"];
 
 export type LotteryState =
 	| { status: "initial" }
-	| { status: "open"; monthCycle: string; expectedClosingAt: string }
-	| { status: "windowClosed"; monthCycle: string }
-	| { status: "cancelled"; monthCycle: string }
+	| { status: "open"; lotteryName: string; expectedClosingAt: string }
+	| { status: "windowClosed"; lotteryName: string }
+	| { status: "cancelled"; lotteryName: string }
 	| {
 			status: "drawn";
-			monthCycle: string;
+			lotteryName: string;
 			selected: LotterySelection[];
 			notSelected: LotteryApplicant[];
 	  };

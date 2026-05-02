@@ -58,7 +58,7 @@ describe("apply routes", () => {
 		await env.eventStore.appendToStream("lottery-2026-03", [
 			{
 				type: "ApplicationWindowOpened",
-				data: { monthCycle: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
+				data: { lotteryName: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
 			},
 		]);
 
@@ -203,7 +203,7 @@ describe("apply routes", () => {
 			await env.eventStore.appendToStream("lottery-2026-03", [
 				{
 					type: "ApplicationWindowOpened",
-					data: { monthCycle: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
+					data: { lotteryName: "2026-03", openedAt: "2026-03-01T00:00:00Z" },
 				},
 			]);
 		});

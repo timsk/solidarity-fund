@@ -90,27 +90,27 @@ export function grantsBoard(grants: GrantRow[]): string {
 
 export function grantsPage(
 	grants: GrantRow[],
-	months: string[],
-	currentMonth: string,
+	lotteries: string[],
+	currentLottery: string,
 ): string {
-	const monthOptions = months
+	const lotteryOptions = lotteries
 		.map(
 			(m) =>
-				`<option value="${escapeHtml(m)}"${m === currentMonth ? " selected" : ""}>${escapeHtml(m)}</option>`,
+				`<option value="${escapeHtml(m)}"${m === currentLottery ? " selected" : ""}>${escapeHtml(m)}</option>`,
 		)
 		.join("\n");
 
-	const body = `<div class="max-w-[1800px] mx-auto px-4 py-8" data-signals='${escapeHtml(JSON.stringify({ month: currentMonth }))}'>
+	const body = `<div class="max-w-[1800px] mx-auto px-4 py-8" data-signals='${escapeHtml(JSON.stringify({ lottery: currentLottery }))}'>
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-3">
 			<a href="/" class="text-bark-muted hover:text-bark transition-colors text-sm">&larr; Back</a>
 			<h1 class="font-heading text-2xl font-semibold text-bark">Grants</h1>
 		</div>
 		<select
-			data-bind:month
-			data-on:change="@get('/grants?month=' + $month)"
+			data-bind:lottery
+			data-on:change="@get('/grants?lottery=' + $lottery)"
 			class="input max-w-48 bg-white text-sm">
-			${monthOptions}
+			${lotteryOptions}
 		</select>
 	</div>
 

@@ -45,7 +45,7 @@ describe("grant routes", () => {
 					grantId: id,
 					applicationId: `app-${id}`,
 					applicantId: "a1",
-					monthCycle: "2026-03",
+					lotteryName: "2026-03",
 					rank: 1,
 					paymentPreference: "cash",
 					createdAt: "2026-03-01T00:00:00.000Z",

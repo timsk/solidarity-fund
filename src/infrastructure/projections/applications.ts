@@ -20,7 +20,7 @@ export const applicationsProjection = sqliteProjection<ApplicationEvent>({
 				ref TEXT NOT NULL UNIQUE,
 				id TEXT NOT NULL UNIQUE,
 				applicant_id TEXT NOT NULL,
-				month_cycle TEXT NOT NULL,
+				lottery_name TEXT NOT NULL,
 				status TEXT NOT NULL,
 				rank INTEGER,
 				payment_preference TEXT NOT NULL,
@@ -46,6 +46,13 @@ export const applicationsProjection = sqliteProjection<ApplicationEvent>({
 		} catch {
 			// Column already exists (added by CREATE TABLE IF NOT EXISTS above)
 		}
+		try {
+			await connection.command(
+				"ALTER TABLE applications RENAME COLUMN month_cycle TO lottery_name",
+			);
+		} catch {
+			// Column already renamed or doesn't exist
+		}
 	},
 
 	handle: async (events, { connection }) => {
@@ -54,13 +61,13 @@ export const applicationsProjection = sqliteProjection<ApplicationEvent>({
 				case "ApplicationSubmitted":
 					await connection.command(
 						`INSERT OR IGNORE INTO applications
-						   (ref, id, applicant_id, month_cycle, status, payment_preference, name, phone, email, meeting_place, applied_at, sort_code, account_number, poa_ref)
+						   (ref, id, applicant_id, lottery_name, status, payment_preference, name, phone, email, meeting_place, applied_at, sort_code, account_number, poa_ref)
 						 VALUES (?, ?, ?, ?, 'applied', ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 						[
 							data.applicationId.slice(0, 8),
 							data.applicationId,
 							data.applicantId,
-							data.monthCycle,
+							data.lotteryName,
 							data.paymentPreference,
 							data.identity.name,
 							data.identity.phone,

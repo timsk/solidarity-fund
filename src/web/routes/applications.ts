@@ -29,7 +29,7 @@ import {
 	applicationsTableBody,
 } from "../pages/applications.ts";
 import { patchElements, sseResponse } from "../sse.ts";
-import { getCurrentLotteryMonthCycle } from "./utils.ts";
+import { getCurrentLotteryName } from "./utils.ts";
 
 export function createApplicationRoutes(
 	appRepo: ApplicationRepository,
@@ -43,10 +43,10 @@ export function createApplicationRoutes(
 			month?: string,
 			filters?: ApplicationFilters,
 		): Promise<Response> {
-			const months = await appRepo.listDistinctMonths();
+			const months = await appRepo.listDistinctLotteries();
 			const currentMonth =
-				month ?? months[0] ?? (await getCurrentLotteryMonthCycle(pool));
-			const applications = await appRepo.listByMonth(currentMonth, filters);
+				month ?? months[0] ?? (await getCurrentLotteryName(pool));
+			const applications = await appRepo.listByLottery(currentMonth, filters);
 			return new Response(
 				applicationsPage(applications, months, currentMonth, filters),
 				{
@@ -97,7 +97,7 @@ export function createApplicationRoutes(
 							confirmedApplicantId ?? app.applicantId,
 							app.name ?? "",
 							app.email ?? undefined,
-							app.monthCycle,
+							app.lotteryName,
 							pool,
 							{ skipWindowCheck: true, excludeApplicationId: applicationId },
 						)
@@ -116,7 +116,7 @@ export function createApplicationRoutes(
 			if (!updated) return new Response("Not found", { status: 404 });
 
 			const reviewedByName = await resolveReviewedBy(updated, volunteerRepo);
-			const applications = await appRepo.listByMonth(app.monthCycle);
+			const applications = await appRepo.listByLottery(app.lotteryName);
 			return sseResponse(
 				patchElements(revertablePanel(updated, undefined, reviewedByName)),
 				patchElements(applicationsTableBody(applications)),
@@ -177,7 +177,7 @@ export function createApplicationRoutes(
 					? await applicantRepo.getByPhoneAndName(updated.phone, updated.name)
 					: null;
 			const reviewedByName = await resolveReviewedBy(updated, volunteerRepo);
-			const applications = await appRepo.listByMonth(app.monthCycle);
+			const applications = await appRepo.listByLottery(app.lotteryName);
 			return sseResponse(
 				patchElements(
 					reviewPanel(updated, applicant?.id ?? null, reviewedByName),

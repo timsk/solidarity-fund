@@ -2,7 +2,7 @@ export type ApplicationRow = {
 	ref: string;
 	id: string;
 	applicantId: string;
-	monthCycle: string;
+	lotteryName: string;
 	status: string;
 	rank: number | null;
 	paymentPreference: string;
@@ -29,9 +29,9 @@ export type ApplicationFilters = {
 export interface ApplicationRepository {
 	getById(id: string): Promise<ApplicationRow | null>;
 	getByRef(ref: string): Promise<ApplicationRow | null>;
-	listByMonth(
-		monthCycle: string,
+	listByLottery(
+		lotteryName: string,
 		filters?: ApplicationFilters,
 	): Promise<ApplicationRow[]>;
-	listDistinctMonths(): Promise<string[]>;
+	listDistinctLotteries(): Promise<string[]>;
 }

@@ -18,7 +18,7 @@ export type ApplicationFormData = {
 	email?: string;
 	paymentPreference: PaymentPreference;
 	meetingPlace?: string;
-	monthCycle: string;
+	lotteryName: string;
 	eligibility: EligibilityResult;
 	bankDetails?: {
 		sortCode: string;
@@ -56,7 +56,7 @@ export async function submitApplication(
 			meetingDetails: form.meetingPlace
 				? { place: form.meetingPlace }
 				: undefined,
-			monthCycle: form.monthCycle,
+			lotteryName: form.lotteryName,
 			identityResolution,
 			eligibility: form.eligibility,
 			submittedAt: new Date().toISOString(),

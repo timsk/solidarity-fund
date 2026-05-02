@@ -12,7 +12,7 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 	init: async ({ context: { connection } }) => {
 		await connection.command(`
 			CREATE TABLE IF NOT EXISTS lottery_windows (
-				month_cycle TEXT PRIMARY KEY,
+				lottery_name TEXT PRIMARY KEY,
 				status TEXT NOT NULL,
 				expected_closing_at TEXT
 			)
@@ -25,6 +25,13 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 		} catch {
 			// Column already exists
 		}
+		try {
+			await connection.command(
+				"ALTER TABLE lottery_windows RENAME COLUMN month_cycle TO lottery_name",
+			);
+		} catch {
+			// Column already renamed or doesn't exist
+		}
 	},
 
 	handle: async (events, { connection }) => {
@@ -32,26 +39,26 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 			switch (type) {
 				case "ApplicationWindowOpened":
 					await connection.command(
-						`INSERT OR REPLACE INTO lottery_windows (month_cycle, status, expected_closing_at) VALUES (?, 'open', ?)`,
-						[data.monthCycle, data.expectedClosingAt],
+						`INSERT OR REPLACE INTO lottery_windows (lottery_name, status, expected_closing_at) VALUES (?, 'open', ?)`,
+						[data.lotteryName, data.expectedClosingAt],
 					);
 					break;
 				case "ApplicationWindowClosed":
 					await connection.command(
-						`UPDATE lottery_windows SET status = 'closed' WHERE month_cycle = ?`,
-						[data.monthCycle],
+						`UPDATE lottery_windows SET status = 'closed' WHERE lottery_name = ?`,
+						[data.lotteryName],
 					);
 					break;
 				case "LotteryCancelled":
 					await connection.command(
-						`UPDATE lottery_windows SET status = 'cancelled' WHERE month_cycle = ?`,
-						[data.monthCycle],
+						`UPDATE lottery_windows SET status = 'cancelled' WHERE lottery_name = ?`,
+						[data.lotteryName],
 					);
 					break;
 				case "LotteryDrawn":
 					await connection.command(
-						`UPDATE lottery_windows SET status = 'drawn' WHERE month_cycle = ?`,
-						[data.monthCycle],
+						`UPDATE lottery_windows SET status = 'drawn' WHERE lottery_name = ?`,
+						[data.lotteryName],
 					);
 					break;
 			}

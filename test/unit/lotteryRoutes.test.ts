@@ -93,7 +93,7 @@ describe("autoCloseExpiredLottery", () => {
 		);
 		const pool = makeMockPool([
 			{
-				month_cycle: "2026-12",
+				lottery_name: "2026-12",
 				expected_closing_at: "2099-01-01T00:00:00.000Z",
 			},
 		]);
@@ -115,7 +115,7 @@ describe("autoCloseExpiredLottery", () => {
 		);
 		const pool = makeMockPool([
 			{
-				month_cycle: "2026-04",
+				lottery_name: "2026-04",
 				expected_closing_at: "2020-01-01T00:00:00.000Z",
 			},
 		]);
@@ -123,8 +123,8 @@ describe("autoCloseExpiredLottery", () => {
 		const result = await autoCloseExpiredLottery(
 			pool,
 			mockEventStore,
-			async (monthCycle: string, es: unknown) => {
-				closeArgs = [monthCycle, es];
+			async (lotteryName: string, es: unknown) => {
+				closeArgs = [lotteryName, es];
 			},
 		);
 		expect(result).toBe(true);
@@ -146,7 +146,7 @@ describe("autoCloseExpiredLottery", () => {
 					return fn({
 						query: () => [
 							{
-								month_cycle: "2026-04",
+								lottery_name: "2026-04",
 								expected_closing_at: "2020-01-01T00:00:00.000Z",
 							},
 						],

@@ -25,7 +25,7 @@ export async function processLotteryDrawn(
 						type: "SelectApplication",
 						data: {
 							applicationId: selected.applicationId,
-							lotteryMonthCycle: event.data.monthCycle,
+							lotteryName: event.data.lotteryName,
 							rank: selected.rank,
 							selectedAt: event.data.drawnAt,
 						},
@@ -47,7 +47,7 @@ export async function processLotteryDrawn(
 						type: "RejectFromLottery",
 						data: {
 							applicationId: notSelected.applicationId,
-							lotteryMonthCycle: event.data.monthCycle,
+							lotteryName: event.data.lotteryName,
 							rejectedAt: event.data.drawnAt,
 						},
 					},
@@ -74,7 +74,7 @@ export async function processLotteryCancelled(
 						type: "ApplicationLotteryCancelled",
 						data: {
 							applicationId,
-							lotteryMonthCycle: event.data.monthCycle,
+							lotteryName: event.data.lotteryName,
 							cancelledAt: event.data.cancelledAt,
 						},
 					} as unknown as CancelApplicationDueToLottery,

@@ -6,7 +6,7 @@ const app: ApplicationRow = {
 	ref: 42,
 	id: "app-1",
 	applicantId: "applicant-07700900001",
-	monthCycle: "2026-03",
+	lotteryName: "2026-03",
 	status: "accepted",
 	rank: null,
 	paymentPreference: "cash",
@@ -39,7 +39,7 @@ describe("applicationsPage", () => {
 		expect(html).toContain("Flagged");
 	});
 
-	test("renders month cycle selector", () => {
+	test("renders lottery name selector", () => {
 		const html = applicationsPage([app], ["2026-03", "2026-04"], "2026-03");
 		expect(html).toContain("2026-03");
 		expect(html).toContain("2026-04");

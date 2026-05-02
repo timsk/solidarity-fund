@@ -143,9 +143,9 @@ export function describeEvent(
 		case "ApplicationReviewReverted":
 			return `Review reverted for <strong>${appRef()}</strong>${volName("volunteerId")}`;
 		case "ApplicationWindowOpened":
-			return `Application window opened · ${escapeHtml(String(data.monthCycle ?? ""))}`;
+			return `Application window opened · ${escapeHtml(String(data.lotteryName ?? ""))}`;
 		case "ApplicationWindowClosed":
-			return `Application window closed · ${escapeHtml(String(data.monthCycle ?? ""))}`;
+			return `Application window closed · ${escapeHtml(String(data.lotteryName ?? ""))}`;
 		case "ApplicantCreated":
 			return `Applicant <strong>${escapeHtml(String(data.name ?? ""))}</strong> created`;
 		case "ApplicantUpdated":
@@ -186,7 +186,7 @@ export function describeEvent(
 			return `Volunteer${volTarget("volunteerId")} reimbursed · ref ${escapeHtml(String(data.expenseReference ?? ""))}`;
 		case "LotteryDrawn": {
 			const selected = Array.isArray(data.selected) ? data.selected.length : 0;
-			return `<strong>${selected}</strong> selected · <strong>£${escapeHtml(String(data.grantAmount ?? ""))}</strong> each · cycle ${escapeHtml(String(data.monthCycle ?? ""))}`;
+			return `<strong>${selected}</strong> selected · <strong>£${escapeHtml(String(data.grantAmount ?? ""))}</strong> each · cycle ${escapeHtml(String(data.lotteryName ?? ""))}`;
 		}
 		default:
 			return "";

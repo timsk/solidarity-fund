@@ -95,22 +95,22 @@ const PAYMENT_OPTIONS = [
 ];
 
 function filterUrl(): string {
-	return "'/applications?month=' + $month + '&status=' + $status + '&payment=' + $payment";
+	return "'/applications?lottery=' + $lottery + '&status=' + $status + '&payment=' + $payment";
 }
 
 export function applicationsPage(
 	applications: ApplicationRow[],
-	months: string[],
-	currentMonth: string,
+	lotteries: string[],
+	currentLottery: string,
 	filters?: ApplicationFilters,
 ): string {
 	const currentStatus = filters?.status ?? "all";
 	const currentPayment = filters?.paymentPreference ?? "all";
 
-	const monthOptions = months
+	const lotteryOptions = lotteries
 		.map(
 			(m) =>
-				`<option value="${escapeHtml(m)}"${m === currentMonth ? " selected" : ""}>${escapeHtml(m)}</option>`,
+				`<option value="${escapeHtml(m)}"${m === currentLottery ? " selected" : ""}>${escapeHtml(m)}</option>`,
 		)
 		.join("\n");
 
@@ -124,7 +124,7 @@ export function applicationsPage(
 			`<option value="${o.value}"${o.value === currentPayment ? " selected" : ""}>${o.label}</option>`,
 	).join("\n");
 
-	const body = `<div class="max-w-5xl mx-auto px-4 py-8" data-signals='{"month": "${escapeHtml(currentMonth)}", "status": "${escapeHtml(currentStatus)}", "payment": "${escapeHtml(currentPayment)}"}'>
+	const body = `<div class="max-w-5xl mx-auto px-4 py-8" data-signals='{"lottery": "${escapeHtml(currentLottery)}", "status": "${escapeHtml(currentStatus)}", "payment": "${escapeHtml(currentPayment)}"}'>
 	<div class="flex items-center justify-between mb-6">
 		<div class="flex items-center gap-3">
 			<a href="/" class="text-bark-muted hover:text-bark transition-colors text-sm">&larr; Back</a>
@@ -132,10 +132,10 @@ export function applicationsPage(
 		</div>
 		<div class="flex items-center gap-2">
 			<select
-				data-bind:month
+				data-bind:lottery
 				data-on:change="@get(${filterUrl()})"
 				class="input max-w-48 bg-white text-sm">
-				${monthOptions}
+				${lotteryOptions}
 			</select>
 			<select
 				data-bind:status

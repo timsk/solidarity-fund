@@ -8,7 +8,7 @@ type DbRow = {
 	id: string;
 	application_id: string;
 	applicant_id: string;
-	month_cycle: string;
+	lottery_name: string;
 	rank: number;
 	status: string;
 	payment_preference: string;
@@ -42,7 +42,7 @@ function rowToGrant(row: DbRow): GrantRow {
 		id: row.id,
 		applicationId: row.application_id,
 		applicantId: row.applicant_id,
-		monthCycle: row.month_cycle,
+		lotteryName: row.lottery_name,
 		rank: row.rank,
 		status: row.status,
 		paymentPreference: row.payment_preference,
@@ -113,12 +113,12 @@ export function SQLiteGrantRepository(
 			}
 		},
 
-		async listByMonth(monthCycle: string): Promise<GrantRow[]> {
+		async listByLottery(lotteryName: string): Promise<GrantRow[]> {
 			try {
 				return await pool.withConnection(async (conn) => {
 					const rows = await conn.query<DbRow>(
-						`${SELECT_GRANTS} WHERE g.month_cycle = ? ORDER BY g.rank ASC`,
-						[monthCycle],
+						`${SELECT_GRANTS} WHERE g.lottery_name = ? ORDER BY g.rank ASC`,
+						[lotteryName],
 					);
 					return rows.map(rowToGrant);
 				});
@@ -128,13 +128,13 @@ export function SQLiteGrantRepository(
 			}
 		},
 
-		async listDistinctMonths(): Promise<string[]> {
+		async listDistinctLotteries(): Promise<string[]> {
 			try {
 				return await pool.withConnection(async (conn) => {
-					const rows = await conn.query<{ month_cycle: string }>(
-						"SELECT DISTINCT month_cycle FROM grants ORDER BY month_cycle DESC",
+					const rows = await conn.query<{ lottery_name: string }>(
+						"SELECT DISTINCT lottery_name FROM grants ORDER BY lottery_name DESC",
 					);
-					return rows.map((r) => r.month_cycle);
+					return rows.map((r) => r.lottery_name);
 				});
 			} catch (err) {
 				if (isNoSuchTable(err)) return [];
