@@ -27,7 +27,7 @@ describe("applyPage", () => {
 		expect(html).toContain('name="poa"');
 		expect(html).toContain('type="file"');
 		expect(html).toContain('accept="image/*,.pdf"');
-		expect(html).toContain("photo of a paper document");
+		expect(html).toContain("Optional — but attaching now speeds things up");
 	});
 
 	test("includes Datastar for payment preference toggle", () => {

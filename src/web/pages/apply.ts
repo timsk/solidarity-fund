@@ -80,15 +80,15 @@ export function applyPage(closesAt: string): string {
 		${countdownHtml}
 		<form action="/apply" method="POST" enctype="multipart/form-data" class="space-y-4" data-signals='{"paymentPref": "cash"}'>
 			<div>
-				<label for="name" class="block text-sm font-body text-bark mb-1">Name</label>
+				<label for="name" class="block text-sm font-body text-bark mb-1">Name <span class="text-red-500">*</span></label>
 				<input type="text" id="name" name="name" required class="input" />
 			</div>
 			<div>
-				<label for="email" class="block text-sm font-body text-bark mb-1">Email (optional)</label>
+				<label for="email" class="block text-sm font-body text-bark mb-1">Email</label>
 				<input type="email" id="email" name="email" class="input" />
 			</div>
 			<div>
-				<label for="phone" class="block text-sm font-body text-bark mb-1">Phone</label>
+				<label for="phone" class="block text-sm font-body text-bark mb-1">Phone <span class="text-red-500">*</span></label>
 				<input type="tel" id="phone" name="phone" required class="input" />
 			</div>
 			<fieldset>
@@ -106,22 +106,22 @@ export function applyPage(closesAt: string): string {
 			</fieldset>
 			<div id="cashFields" class="space-y-4" data-show="$paymentPref === 'cash'">
 				<div>
-					<label for="meetingPlace" class="block text-sm font-body text-bark mb-1">Meeting place or address</label>
+					<label for="meetingPlace" class="block text-sm font-body text-bark mb-1">Meeting place or address <span class="text-red-500">*</span></label>
 					<input type="text" id="meetingPlace" name="meetingPlace" data-attr:required="$paymentPref === 'cash' ? '' : null" class="input" />
 				</div>
 			</div>
 			<div id="bankFields" class="space-y-4" data-show="$paymentPref === 'bank'" style="display:none;">
 				<div>
-					<label for="sortCode" class="block text-sm font-body text-bark mb-1">Sort Code</label>
+					<label for="sortCode" class="block text-sm font-body text-bark mb-1">Sort Code <span class="text-red-500">*</span></label>
 					<input type="text" id="sortCode" name="sortCode" class="input" placeholder="12-34-56" pattern="\\d{2}-?\\d{2}-?\\d{2}" title="Sort code must be 6 digits, e.g. 12-34-56 or 123456" data-attr:required="$paymentPref === 'bank' ? '' : null" />
 				</div>
 				<div>
-					<label for="accountNumber" class="block text-sm font-body text-bark mb-1">Account Number</label>
+					<label for="accountNumber" class="block text-sm font-body text-bark mb-1">Account Number <span class="text-red-500">*</span></label>
 					<input type="text" id="accountNumber" name="accountNumber" class="input" placeholder="12345678" pattern="\\d{8}" title="Account number must be 8 digits" data-attr:required="$paymentPref === 'bank' ? '' : null" />
 				</div>
 				<div>
 					<label for="poa" class="block text-sm font-body text-bark mb-1">Proof of Address</label>
-					<p class="text-xs text-bark-muted mb-1">Please attach a photo of a paper document showing your name, address and a date within the last three months, not a screenshot or PDF.</p>
+					<p class="text-xs text-bark-muted mb-1">Optional — but attaching now speeds things up if you are selected.</p>
 					<input type="file" id="poa" name="poa" accept="image/*,.pdf" class="input text-sm" />
 				</div>
 			</div>
