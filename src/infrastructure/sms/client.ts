@@ -25,7 +25,6 @@ export class ClickSendSmsClient implements SmsClient {
 	constructor(
 		private username: string,
 		private apiKey: string,
-		private fromName?: string,
 		private apiUrl?: string,
 	) {}
 
@@ -41,7 +40,6 @@ export class ClickSendSmsClient implements SmsClient {
 				{
 					to: normalizedTo,
 					body,
-					from: this.fromName ?? "CSF",
 				},
 			],
 		};
@@ -99,7 +97,7 @@ export class NullSmsClient implements SmsClient {
 export function createSmsClient(config?: SmsConfig): SmsClient {
 	const cfg = config ?? getSmsConfig();
 	if (cfg.enabled) {
-		return new ClickSendSmsClient(cfg.username, cfg.apiKey, cfg.fromName);
+		return new ClickSendSmsClient(cfg.username, cfg.apiKey);
 	}
 	return new NullSmsClient();
 }

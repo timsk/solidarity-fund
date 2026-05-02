@@ -9,7 +9,6 @@ Transactional SMS notifications are sent using [ClickSend](https://www.clicksend
 | `SMS_ENABLED` | No | `false` | Toggle SMS on/off |
 | `CLICKSEND_USERNAME` | If enabled | — | ClickSend account username |
 | `CLICKSEND_API_KEY` | If enabled | — | ClickSend REST API key |
-| `SMS_FROM_NAME` | No | `CSF` | Sender ID for outbound messages |
 | `SMS_LOG_LEVEL` | No | `warn` | Verbosity: `silent`, `warn`, `info`, `debug` |
 
 ## First-time setup

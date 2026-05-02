@@ -22,7 +22,6 @@ export type SmsConfig = {
 	enabled: boolean;
 	username: string;
 	apiKey: string;
-	fromName: string;
 	logLevel: SmsLogLevel;
 };
 
@@ -30,12 +29,8 @@ export function getSmsConfig(): SmsConfig {
 	if (_smsConfig) return _smsConfig;
 
 	const enabled = process.env.SMS_ENABLED === "true";
-	const fromName = process.env.SMS_FROM_NAME ?? "CSF";
 	const logLevel = (process.env.SMS_LOG_LEVEL ?? "warn") as SmsLogLevel;
 
-	if (fromName.length > 11) {
-		throw new Error("SMS_FROM_NAME must be 11 characters or fewer");
-	}
 	if (!["silent", "warn", "info", "debug"].includes(logLevel)) {
 		throw new Error(
 			`SMS_LOG_LEVEL must be one of: silent, warn, info, debug. Got: ${logLevel}`,
@@ -50,13 +45,12 @@ export function getSmsConfig(): SmsConfig {
 				"CLICKSEND_USERNAME and CLICKSEND_API_KEY are required when SMS_ENABLED=true",
 			);
 		}
-		_smsConfig = { enabled: true, username, apiKey, fromName, logLevel };
+		_smsConfig = { enabled: true, username, apiKey, logLevel };
 	} else {
 		_smsConfig = {
 			enabled: false,
 			username: "",
 			apiKey: "",
-			fromName,
 			logLevel,
 		};
 	}

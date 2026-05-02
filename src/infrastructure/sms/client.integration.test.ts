@@ -35,12 +35,7 @@ afterEach(() => {
 });
 
 test("ClickSendSmsClient sends correct payload to mock server", async () => {
-	const client = new ClickSendSmsClient(
-		"user",
-		"key",
-		"CSF",
-		`http://127.0.0.1:${server.port}`,
-	);
+	const client = new ClickSendSmsClient("user", "key", `http://127.0.0.1:${server.port}`);
 	const result = await client.send({ to: "+61422222222", body: "Hello" });
 
 	expect(capturedRequest).not.toBeNull();

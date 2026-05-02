@@ -21,7 +21,6 @@ EXISTING_ENV=$(ssh "$SSH_TARGET" "cat '$ENV_FILE' 2>/dev/null" || true)
 		FUND_NAME="${FUND_NAME:-$(echo "$EXISTING_ENV" | grep '^FUND_NAME=' | sed 's/^FUND_NAME=//' | tr -d "'" || true)}"
 		PORT="${PORT:-$(echo "$EXISTING_ENV" | grep '^PORT=' | sed 's/^PORT=//' | tr -d "'" || true)}"
 		SMS_ENABLED="${SMS_ENABLED:-$(echo "$EXISTING_ENV" | grep '^SMS_ENABLED=' | sed 's/^SMS_ENABLED=//' | tr -d "'" || true)}"
-		SMS_FROM_NAME="${SMS_FROM_NAME:-$(echo "$EXISTING_ENV" | grep '^SMS_FROM_NAME=' | sed 's/^SMS_FROM_NAME=//' | tr -d "'" || true)}"
 		SMS_LOG_LEVEL="${SMS_LOG_LEVEL:-$(echo "$EXISTING_ENV" | grep '^SMS_LOG_LEVEL=' | sed 's/^SMS_LOG_LEVEL=//' | tr -d "'" || true)}"
 		CLICKSEND_USERNAME="${CLICKSEND_USERNAME:-$(echo "$EXISTING_ENV" | grep '^CLICKSEND_USERNAME=' | sed 's/^CLICKSEND_USERNAME=//' | tr -d "'" || true)}"
 		CLICKSEND_API_KEY="${CLICKSEND_API_KEY:-$(echo "$EXISTING_ENV" | grep '^CLICKSEND_API_KEY=' | sed 's/^CLICKSEND_API_KEY=//' | tr -d "'" || true)}"
@@ -50,7 +49,6 @@ fi
 # ── Write env file to remote first ─────────────────────────────────
 # Set defaults for optional variables before escaping
 : "${SMS_ENABLED:=false}"
-: "${SMS_FROM_NAME:=CSF}"
 : "${SMS_LOG_LEVEL:=warn}"
 : "${EMAIL_ENABLED:=false}"
 
@@ -64,7 +62,6 @@ FUND_NAME='${FUND_NAME//\'/\'\\\'\'}'
 ADMIN_PASSWORD='${ADMIN_PASSWORD//\'/\'\\\'\'}'
 ALTCHA_HMAC_KEY='${ALTCHA_HMAC_KEY//\'/\'\\\'\'}'
 SMS_ENABLED='${SMS_ENABLED//\'/\'\\\'\'}'
-SMS_FROM_NAME='${SMS_FROM_NAME//\'/\'\\\'\'}'
 SMS_LOG_LEVEL='${SMS_LOG_LEVEL//\'/\'\\\'\'}'
 CLICKSEND_USERNAME='${CLICKSEND_USERNAME//\'/\'\\\'\'}'
 CLICKSEND_API_KEY='${CLICKSEND_API_KEY//\'/\'\\\'\'}'
