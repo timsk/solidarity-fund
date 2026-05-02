@@ -154,7 +154,7 @@ export async function openLotteryWindow(page: Page): Promise<void> {
 	const min = String(closeDate.getMinutes()).padStart(2, "0");
 	const closingAt = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 	await page.request.post("/lottery/open", {
-		data: { lotteryname: "E2E Test", expectedclosing: closingAt },
+		data: { lotteryname: "E2E Test", expectedClosing: closingAt },
 	});
 	await page.goto("/lottery");
 	await page.locator("text=Close Applications").waitFor({ timeout: 10000 });

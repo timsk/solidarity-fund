@@ -47,7 +47,7 @@ test.describe("start new lottery after draw", () => {
 		await page.request.post("/lottery/open", {
 			data: {
 				lotteryname: "E2E Test Round 2",
-				expectedclosing: closingAt,
+				expectedClosing: closingAt,
 			},
 		});
 

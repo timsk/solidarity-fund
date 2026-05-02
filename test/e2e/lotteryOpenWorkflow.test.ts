@@ -25,7 +25,7 @@ test.describe("lottery open workflow", () => {
 		await page.request.post("/lottery/open", {
 			data: {
 				lotteryname: "E2E Test Form",
-				expectedclosing: "2026-06-01T12:00",
+				expectedClosing: "2026-06-01T12:00",
 			},
 		});
 		await page.goto("/lottery");
