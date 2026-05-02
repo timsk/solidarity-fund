@@ -25,6 +25,10 @@ EXISTING_ENV=$(ssh "$SSH_TARGET" "cat '$ENV_FILE' 2>/dev/null" || true)
 		SMS_LOG_LEVEL="${SMS_LOG_LEVEL:-$(echo "$EXISTING_ENV" | grep '^SMS_LOG_LEVEL=' | sed 's/^SMS_LOG_LEVEL=//' | tr -d "'" || true)}"
 		CLICKSEND_USERNAME="${CLICKSEND_USERNAME:-$(echo "$EXISTING_ENV" | grep '^CLICKSEND_USERNAME=' | sed 's/^CLICKSEND_USERNAME=//' | tr -d "'" || true)}"
 		CLICKSEND_API_KEY="${CLICKSEND_API_KEY:-$(echo "$EXISTING_ENV" | grep '^CLICKSEND_API_KEY=' | sed 's/^CLICKSEND_API_KEY=//' | tr -d "'" || true)}"
+		EMAIL_ENABLED="${EMAIL_ENABLED:-$(echo "$EXISTING_ENV" | grep '^EMAIL_ENABLED=' | sed 's/^EMAIL_ENABLED=//' | tr -d "'" || true)}"
+		GMAIL_USER="${GMAIL_USER:-$(echo "$EXISTING_ENV" | grep '^GMAIL_USER=' | sed 's/^GMAIL_USER=//' | tr -d "'" || true)}"
+		GMAIL_APP_PASSWORD="${GMAIL_APP_PASSWORD:-$(echo "$EXISTING_ENV" | grep '^GMAIL_APP_PASSWORD=' | sed 's/^GMAIL_APP_PASSWORD=//' | tr -d "'" || true)}"
+		EMAIL_FROM_NAME="${EMAIL_FROM_NAME:-$(echo "$EXISTING_ENV" | grep '^EMAIL_FROM_NAME=' | sed 's/^EMAIL_FROM_NAME=//' | tr -d "'" || true)}"
 	fi
 
 # Defaults for vars that can be overridden by remote .env
@@ -48,6 +52,7 @@ fi
 : "${SMS_ENABLED:=false}"
 : "${SMS_FROM_NAME:=CSF}"
 : "${SMS_LOG_LEVEL:=warn}"
+: "${EMAIL_ENABLED:=false}"
 
 ssh "$SSH_TARGET" "mkdir -p '$DATA_DIR'"
 ssh "$SSH_TARGET" "cat > '$ENV_FILE' && chmod 600 '$ENV_FILE'" <<EOF
@@ -63,6 +68,10 @@ SMS_FROM_NAME='${SMS_FROM_NAME//\'/\'\\\'\'}'
 SMS_LOG_LEVEL='${SMS_LOG_LEVEL//\'/\'\\\'\'}'
 CLICKSEND_USERNAME='${CLICKSEND_USERNAME//\'/\'\\\'\'}'
 CLICKSEND_API_KEY='${CLICKSEND_API_KEY//\'/\'\\\'\'}'
+EMAIL_ENABLED='${EMAIL_ENABLED//\'/\'\\\'\'}'
+GMAIL_USER='${GMAIL_USER//\'/\'\\\'\'}'
+GMAIL_APP_PASSWORD='${GMAIL_APP_PASSWORD//\'/\'\\\'\'}'
+EMAIL_FROM_NAME='${EMAIL_FROM_NAME//\'/\'\\\'\'}'
 IMAGE='${IMAGE//\'/\'\\\'\'}'
 NODE_ENV=production
 EOF
