@@ -46,13 +46,7 @@ export const applicationsProjection = sqliteProjection<ApplicationEvent>({
 		} catch {
 			// Column already exists (added by CREATE TABLE IF NOT EXISTS above)
 		}
-		try {
-			await connection.command(
-				"ALTER TABLE applications RENAME COLUMN month_cycle TO lottery_name",
-			);
-		} catch {
-			// Column already renamed or doesn't exist
-		}
+
 	},
 
 	handle: async (events, { connection }) => {

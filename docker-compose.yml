@@ -17,6 +17,10 @@ services:
       - CLICKSEND_USERNAME=${CLICKSEND_USERNAME}
       - CLICKSEND_API_KEY=${CLICKSEND_API_KEY}
       - SMS_LOG_LEVEL=${SMS_LOG_LEVEL:-warn}
+      - EMAIL_ENABLED=${EMAIL_ENABLED:-false}
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - EMAIL_FROM_NAME=${EMAIL_FROM_NAME:-Solidarity Fund}
       - PORT=443
       - HTTP_PORT=80
       - TLS_CERT=/var/lib/csf/certs/cert.pem

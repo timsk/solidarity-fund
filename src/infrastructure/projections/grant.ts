@@ -52,13 +52,7 @@ export const grantProjection = sqliteProjection<GrantEvent>({
 			if (!(e instanceof Error && e.message.includes("duplicate column")))
 				throw e;
 		}
-		try {
-			await connection.command(
-				"ALTER TABLE grants RENAME COLUMN month_cycle TO lottery_name",
-			);
-		} catch {
-			// Column already renamed or doesn't exist
-		}
+
 	},
 
 	handle: async (events, { connection }) => {

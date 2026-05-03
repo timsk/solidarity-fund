@@ -25,13 +25,7 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 		} catch {
 			// Column already exists
 		}
-		try {
-			await connection.command(
-				"ALTER TABLE lottery_windows RENAME COLUMN month_cycle TO lottery_name",
-			);
-		} catch {
-			// Column already renamed or doesn't exist
-		}
+
 	},
 
 	handle: async (events, { connection }) => {

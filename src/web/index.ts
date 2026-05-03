@@ -19,14 +19,6 @@ setFundName(fundName);
 
 const { store: eventStore, pool } = createEventStore(dbPath);
 
-try {
-	const { migrateEventPayloads } = await import(
-		"../scripts/migrate-event-payloads.ts"
-	);
-	migrateEventPayloads(dbPath);
-} catch (err) {
-	console.error("Migration check failed:", err);
-}
 const sessionStore = await SQLiteSessionStore(pool);
 const volunteerRepo = await SQLiteVolunteerRepository(pool);
 const applicantRepo = await SQLiteApplicantRepository(pool);
