@@ -127,7 +127,7 @@ flowchart TD
 | Rule | Detail |
 |------|--------|
 | **Grant amount** | £40 fixed |
-| **Cooldown** | 3 months from selection month (selected Jan → reapply Apr) |
+| **Cooldown** | Configurable period (default: 90 days, set via `COOLDOWN_DAYS` env var; selected Jan 1 → reapply from Apr 1) |
 | **Application window** | Volunteer creates a named lottery with optional expected close date; one lottery open at a time |
 | **Phone number** | Mandatory — helps with eligibility checking and contacting winners |
 | **Slots available** | Volunteer enters fund balance; `floor((balance − reserve) ÷ £40)`, reserve set by admin |

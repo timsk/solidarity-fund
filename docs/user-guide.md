@@ -122,7 +122,7 @@ Applicants can check their own progress at `/status` using the 8-character refer
 ### Viewing All Applications
 
 Go to **Applications** to see all applications. You can filter by:
-- **Month** — select the relevant month
+- **Lottery** — select the relevant lottery
 - **Status** — e.g. accepted, flagged, rejected, selected
 - **Payment preference** — bank or cash
 
@@ -162,7 +162,7 @@ If you confirmed or rejected a flagged application in error, you can revert your
 | Reason | Explanation |
 |--------|-------------|
 | `window_closed` | Application submitted outside the open window |
-| `cooldown` | Applicant received a grant within the last 3 months |
+| `cooldown` | Applicant received a grant too recently (default: 90 days, configurable via `COOLDOWN_DAYS`) |
 | `duplicate` | Applicant already applied this month |
 | `identity_mismatch` | Volunteer rejected the flagged identity review |
 
@@ -417,7 +417,7 @@ The system includes several security measures that operate transparently:
 | Rule | Detail |
 |------|--------|
 | **Grant amount** | £40 per grant |
-| **Cooldown** | 3 months from the month of selection — e.g. selected in January → can reapply in April |
+| **Cooldown** | Configurable period (default: 90 days, set via `COOLDOWN_DAYS` env var) — e.g. selected 1 Jan → can reapply from 1 Apr |
 | **Duplicate applications** | One application per person per open lottery |
 | **Application window** | Volunteer creates a named lottery with an expected close date; one lottery open at a time |
 | **Slot calculation** | `floor((fund balance − reserve) ÷ £40)` |
