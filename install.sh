@@ -110,6 +110,7 @@ docker pull "$IMAGE"
 cd "$DATA_DIR"
 docker compose down 2>/dev/null || true
 docker compose up -d
+docker image prune -f
 
 echo ""
 echo "==> $APP_NAME is running on port $PORT (HTTPS) with redirect from $HTTP_PORT (HTTP)"
