@@ -62,7 +62,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 		case "open":
 			return `<p class="text-bark-muted mb-4">Applications open for ${escapeHtml(month)}.</p>
 			<div class="flex gap-3" data-signals="{confirmCancel: false}">
-				<button class="btn btn-primary" data-on:click="@post('/lottery/close')">Close Applications</button>
+				<button class="btn btn-primary" data-show="!$confirmCancel" data-on:click="@post('/lottery/close')">Close Applications</button>
 				<button type="button" class="btn btn-secondary" data-show="!$confirmCancel" data-on:click="$confirmCancel = true">Cancel Lottery</button>
 				<span data-show="$confirmCancel" class="flex items-center gap-2" style="display:none">
 					<span class="text-sm text-red-700 font-semibold">This will delete all applications!</span>
