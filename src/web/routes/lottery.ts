@@ -157,7 +157,7 @@ export function createLotteryRoutes(
 				}
 			}
 
-			return sseResponse(redirectTo(`/applications?month=${lotteryName}`));
+			return sseResponse(redirectTo(`/applications?lottery=${lotteryName}`));
 		},
 
 		async handleCancel(): Promise<Response> {

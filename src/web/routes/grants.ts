@@ -56,12 +56,12 @@ export function createGrantRoutes(
 	}
 
 	return {
-		async list(month?: string): Promise<Response> {
-			const months = await grantRepo.listDistinctLotteries();
-			const currentMonth =
-				month ?? months[0] ?? (await getCurrentLotteryName(pool));
-			const grants = await grantRepo.listByLottery(currentMonth);
-			return new Response(grantsPage(grants, months, currentMonth), {
+		async list(lottery?: string): Promise<Response> {
+			const lotteries = await grantRepo.listDistinctLotteries();
+			const currentLottery =
+				lottery ?? lotteries[0] ?? (await getCurrentLotteryName(pool));
+			const grants = await grantRepo.listByLottery(currentLottery);
+			return new Response(grantsPage(grants, lotteries, currentLottery), {
 				headers: { "Content-Type": "text/html" },
 			});
 		},

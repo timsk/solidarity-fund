@@ -42,7 +42,7 @@ function statusBadge(status: LotteryStatus): string {
 	return `<span class="badge ${styles[status]}">${labels[status]}</span>`;
 }
 
-function actionSection(month: string, status: LotteryStatus): string {
+function actionSection(lottery: string, status: LotteryStatus): string {
 	switch (status) {
 		case "initial":
 			return `<p class="text-bark-muted mb-4">No active lottery — start one below.</p>
@@ -60,7 +60,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 					<button type="submit" class="btn btn-primary">Open Applications</button>
 				</form>`;
 		case "open":
-			return `<p class="text-bark-muted mb-4">Applications open for ${escapeHtml(month)}.</p>
+			return `<p class="text-bark-muted mb-4">Applications open for ${escapeHtml(lottery)}.</p>
 			<div class="flex gap-3" data-signals="{confirmCancel: false}">
 				<button class="btn btn-primary" data-show="!$confirmCancel" data-on:click="@post('/lottery/close')">Close Applications</button>
 				<button type="button" class="btn btn-secondary" data-show="!$confirmCancel" data-on:click="$confirmCancel = true">Cancel Lottery</button>
@@ -71,7 +71,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 				</span>
 			</div>`;
 		case "windowClosed":
-			return `<p class="text-bark-muted mb-4">Window closed for ${escapeHtml(month)}. Ready to draw.</p>
+			return `<p class="text-bark-muted mb-4">Window closed for ${escapeHtml(lottery)}. Ready to draw.</p>
 				<form data-on:submit="@post('/lottery/draw')" class="space-y-4 max-w-sm">
 					<div>
 						<label class="label" for="availableBalance">Available Balance</label>
@@ -88,8 +88,8 @@ function actionSection(month: string, status: LotteryStatus): string {
 					<button type="submit" class="btn btn-primary">Run Draw</button>
 				</form>`;
 		case "drawn":
-			return `<p class="text-bark-muted mb-4">Lottery drawn for ${escapeHtml(month)}.</p>
-			<a href="/applications?month=${encodeURIComponent(month)}" class="btn btn-primary no-underline">View Results</a>
+			return `<p class="text-bark-muted mb-4">Lottery drawn for ${escapeHtml(lottery)}.</p>
+			<a href="/applications?lottery=${encodeURIComponent(lottery)}" class="btn btn-primary no-underline">View Results</a>
 			<hr class="my-6" />
 			<p class="text-bark-muted mb-4">Start a new lottery below.</p>
 			<form data-on:submit="@post('/lottery/open')" class="space-y-4 max-w-sm">
@@ -106,7 +106,7 @@ function actionSection(month: string, status: LotteryStatus): string {
 				<button type="submit" class="btn btn-primary">Open Applications</button>
 			</form>`;
 		case "cancelled":
-			return `<p class="text-bark-muted mb-4">Lottery cancelled for ${escapeHtml(month)}.</p>
+			return `<p class="text-bark-muted mb-4">Lottery cancelled for ${escapeHtml(lottery)}.</p>
 			<a href="/" class="btn btn-primary no-underline">Back to Dashboard</a>
 			<hr class="my-6" />
 			<p class="text-bark-muted mb-4">Start a new lottery below.</p>

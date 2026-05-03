@@ -40,15 +40,15 @@ export function createApplicationRoutes(
 ) {
 	return {
 		async list(
-			month?: string,
+			lottery?: string,
 			filters?: ApplicationFilters,
 		): Promise<Response> {
-			const months = await appRepo.listDistinctLotteries();
-			const currentMonth =
-				month ?? months[0] ?? (await getCurrentLotteryName(pool));
-			const applications = await appRepo.listByLottery(currentMonth, filters);
+			const lotteries = await appRepo.listDistinctLotteries();
+			const currentLottery =
+				lottery ?? lotteries[0] ?? (await getCurrentLotteryName(pool));
+			const applications = await appRepo.listByLottery(currentLottery, filters);
 			return new Response(
-				applicationsPage(applications, months, currentMonth, filters),
+				applicationsPage(applications, lotteries, currentLottery, filters),
 				{
 					headers: { "Content-Type": "text/html" },
 				},

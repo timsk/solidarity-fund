@@ -35,7 +35,7 @@ describe("lotteryPage", () => {
 
 	test("drawn state shows link to applications", () => {
 		const html = lotteryPage("2026-03", "drawn");
-		expect(html).toContain("/applications?month=2026-03");
+		expect(html).toContain("/applications?lottery=2026-03");
 		expect(html).toContain("Lottery drawn");
 	});
 

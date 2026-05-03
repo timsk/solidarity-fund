@@ -132,8 +132,8 @@ export function applicationsPage(
 		</div>
 		<div class="flex items-center gap-2">
 			<select
-				data-bind:lottery
-				data-on:change="@get(${filterUrl()})"
+			data-bind:lottery
+			data-on:change="@get(${filterUrl()})"
 				class="input max-w-48 bg-white text-sm">
 				${lotteryOptions}
 			</select>

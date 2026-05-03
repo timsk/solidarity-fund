@@ -374,7 +374,7 @@ export async function startServer(
 					const redirect = requirePasswordChange(volunteer);
 					if (redirect) return redirect;
 					const url = new URL(req.url);
-					return grantRoutes.list(url.searchParams.get("month") ?? undefined);
+					return grantRoutes.list(url.searchParams.get("lottery") ?? undefined);
 				},
 			},
 			"/grants/close": {
@@ -396,7 +396,7 @@ export async function startServer(
 					const status = url.searchParams.get("status") ?? undefined;
 					const payment = url.searchParams.get("payment") ?? undefined;
 					return applicationRoutes.list(
-						url.searchParams.get("month") ?? undefined,
+						url.searchParams.get("lottery") ?? undefined,
 						{
 							status: status && status !== "all" ? status : undefined,
 							paymentPreference:
