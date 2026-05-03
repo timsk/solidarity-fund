@@ -20,6 +20,8 @@ import {
 	submitAcceptedApplication,
 } from "../helpers/workflowSteps.ts";
 
+process.env.COOLDOWN_DAYS ??= "90";
+
 describe("lottery workflow", () => {
 	let env: TestEnv;
 
@@ -254,7 +256,12 @@ describe("lottery workflow", () => {
 			"2026-04",
 			env.pool,
 		);
-		expect(result).toEqual({ status: "cooldown", lastGrantMonth: "2026-03" });
+		expect(result).toEqual({
+			status: "cooldown",
+			lastGrantSelectedAt: "2026-03-01T10:00:00Z",
+			eligibleAfter: "2026-05-30T10:00:00.000Z",
+			cooldownDays: 90,
+		});
 	});
 
 	test("not_selected projection status", async () => {

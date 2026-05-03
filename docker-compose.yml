@@ -21,6 +21,7 @@ services:
       - GMAIL_USER=${GMAIL_USER}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
       - EMAIL_FROM_NAME=${EMAIL_FROM_NAME:-Solidarity Fund}
+      - COOLDOWN_DAYS=${COOLDOWN_DAYS:-90}
       - PORT=443
       - HTTP_PORT=80
       - TLS_CERT=/var/lib/csf/certs/cert.pem

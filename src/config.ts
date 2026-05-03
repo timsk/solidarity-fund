@@ -96,3 +96,24 @@ export function getEmailConfig(): EmailConfig {
 export function resetEmailConfig(): void {
 	_emailConfig = null;
 }
+
+let _cooldownDays: number | null = null;
+
+export function getCooldownDays(): number {
+	if (_cooldownDays !== null) return _cooldownDays;
+
+	const raw = process.env.COOLDOWN_DAYS ?? "90";
+	const parsed = Number(raw);
+
+	if (!Number.isInteger(parsed) || parsed <= 0) {
+		throw new Error(`COOLDOWN_DAYS must be a positive integer. Got: ${raw}`);
+	}
+
+	_cooldownDays = parsed;
+	return _cooldownDays;
+}
+
+// fallow-ignore-next-line unused-exports
+export function resetCooldownDays(): void {
+	_cooldownDays = null;
+}

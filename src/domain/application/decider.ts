@@ -22,6 +22,14 @@ export type ApplicationCommand =
 
 export const initialState = (): ApplicationState => ({ status: "initial" });
 
+function formatDate(iso: string): string {
+	return new Date(iso).toLocaleDateString("en-GB", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	});
+}
+
 function resolveApplicantId(
 	resolution: IdentityResolution,
 	data: { phone: string; name: string },
@@ -125,7 +133,7 @@ function decideSubmit(
 	// Not eligible — rejected
 	const detail =
 		data.eligibility.status === "cooldown"
-			? `Last grant in ${data.eligibility.lastGrantMonth}`
+			? `Eligible again after ${formatDate(data.eligibility.eligibleAfter)}`
 			: data.eligibility.status === "duplicate"
 				? "Already applied this month"
 				: "Application window is not open";
@@ -193,7 +201,7 @@ function decideReview(
 
 	const detail =
 		data.eligibility.status === "cooldown"
-			? `Last grant in ${data.eligibility.lastGrantMonth}`
+			? `Eligible again after ${formatDate(data.eligibility.eligibleAfter)}`
 			: data.eligibility.status === "duplicate"
 				? "Already applied this month"
 				: "Application window is not open";

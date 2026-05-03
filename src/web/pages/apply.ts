@@ -160,6 +160,7 @@ export function applyResultPage(
 	existingAppliedAt?: string,
 	drawDate?: string,
 	baseUrl?: string,
+	eligibleAfter?: string,
 ): string {
 	let heading: string;
 	let message: string;
@@ -179,8 +180,12 @@ export function applyResultPage(
 				"The application window is currently closed. Please check back later.";
 		} else if (reason === "cooldown") {
 			heading = "Please Wait";
-			message =
-				"You have applied recently. Please wait before submitting a new application.";
+			const date = eligibleAfter
+				? new Date(eligibleAfter).toLocaleDateString("en-GB")
+				: null;
+			message = date
+				? `You can apply again on ${date}.`
+				: "You have applied recently. Please wait before submitting a new application.";
 		} else if (reason === "duplicate") {
 			heading = "Application Already Received";
 			if (existingAppliedAt && drawDate) {

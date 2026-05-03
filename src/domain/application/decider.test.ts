@@ -115,7 +115,12 @@ describe("application decider", () => {
 		it("emits ApplicationRejected for cooldown", () => {
 			const events = decide(
 				makeSubmitCommand({
-					eligibility: { status: "cooldown", lastGrantMonth: "2025-11" },
+					eligibility: {
+						status: "cooldown",
+						lastGrantSelectedAt: "2025-11-15T00:00:00.000Z",
+						eligibleAfter: "2026-02-13T00:00:00.000Z",
+						cooldownDays: 90,
+					},
 				}),
 				initialState(),
 			);
@@ -143,6 +148,25 @@ describe("application decider", () => {
 
 			expect(events[1]?.type).toBe("ApplicationRejected");
 			expect(events[1]?.data).toMatchObject({ reason: "window_closed" });
+		});
+
+		it("includes eligibleAfter date in cooldown rejection detail", () => {
+			const events = decide(
+				makeSubmitCommand({
+					eligibility: {
+						status: "cooldown",
+						lastGrantSelectedAt: "2025-11-15T00:00:00.000Z",
+						eligibleAfter: "2026-02-13T00:00:00.000Z",
+						cooldownDays: 90,
+					},
+				}),
+				initialState(),
+			);
+
+			expect(events[1]?.type).toBe("ApplicationRejected");
+			expect(events[1]?.data.reason).toBe("cooldown");
+			expect(events[1]?.data.detail).toContain("Eligible again after");
+			expect(events[1]?.data.detail).toContain("13 February 2026");
 		});
 
 		it("throws when application already exists", () => {
@@ -219,7 +243,12 @@ describe("application decider", () => {
 						applicationId: APP_ID,
 						volunteerId: "vol-1",
 						decision: "confirm",
-						eligibility: { status: "cooldown", lastGrantMonth: "2025-11" },
+						eligibility: {
+							status: "cooldown",
+							lastGrantSelectedAt: "2025-11-15T00:00:00.000Z",
+							eligibleAfter: "2026-02-13T00:00:00.000Z",
+							cooldownDays: 90,
+						},
 						reviewedAt: NOW,
 					},
 				},

@@ -82,7 +82,7 @@ function formatRejectionReason(
 ): string {
 	switch (reason) {
 		case "cooldown":
-			return "You have applied too recently";
+			return "You have applied too recently. Please wait before applying again.";
 		case "duplicate":
 			return "You have already applied this month";
 		case "identity_mismatch":

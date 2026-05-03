@@ -198,6 +198,15 @@ export function createApplyRoutes(
 					return Response.redirect(`/apply/result?${params}`, 302);
 				}
 
+				if (eligibility.status === "cooldown") {
+					const params = new URLSearchParams({
+						status: "rejected",
+						reason: "cooldown",
+						eligibleAfter: eligibility.eligibleAfter,
+					});
+					return Response.redirect(`/apply/result?${params}`, 302);
+				}
+
 				const { events } = await submitApplication(
 					{
 						applicationId,
@@ -246,6 +255,7 @@ export function createApplyRoutes(
 			const existingAppliedAt =
 				url.searchParams.get("existingAppliedAt") || undefined;
 			const drawDate = url.searchParams.get("drawDate") || undefined;
+			const eligibleAfter = url.searchParams.get("eligibleAfter") || undefined;
 			const baseUrl = `${url.protocol}//${url.host}`;
 			return new Response(
 				applyResultPage(
@@ -255,6 +265,7 @@ export function createApplyRoutes(
 					existingAppliedAt,
 					drawDate,
 					baseUrl,
+					eligibleAfter,
 				),
 				{
 					headers: { "Content-Type": "text/html" },

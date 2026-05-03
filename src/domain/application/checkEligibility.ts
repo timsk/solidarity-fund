@@ -1,16 +1,7 @@
 import type { SQLiteConnectionPool } from "@event-driven-io/emmett-sqlite";
+import { getCooldownDays } from "../../config.ts";
 import { normalizeName } from "./normalizeName.ts";
 import type { EligibilityResult } from "./types.ts";
-
-const COOLDOWN_MONTHS = 3;
-
-function monthsAgo(lotteryName: string, n: number): string {
-	const [year, month] = lotteryName.split("-").map(Number) as [number, number];
-	const date = new Date(year, month - 1 - n, 1);
-	const y = date.getFullYear();
-	const m = String(date.getMonth() + 1).padStart(2, "0");
-	return `${y}-${m}`;
-}
 
 export async function checkEligibility(
 	applicantId: string,
@@ -21,8 +12,11 @@ export async function checkEligibility(
 	options?: {
 		skipWindowCheck?: boolean;
 		excludeApplicationId?: string;
+		cooldownDays?: number;
 	},
 ): Promise<EligibilityResult> {
+	const cooldownDays = options?.cooldownDays ?? getCooldownDays();
+
 	return pool.withConnection(async (conn) => {
 		if (!options?.skipWindowCheck) {
 			// Check if lottery_windows table exists
@@ -108,24 +102,39 @@ export async function checkEligibility(
 			}
 		}
 
-		// Check cooldown: selected in last 3 months
-		const rows = await conn.query<{ lottery_name: string }>(
-			`SELECT lottery_name FROM applications
+		// Check cooldown: selected within the configured window using selected_at
+		const cooldownThreshold = new Date(
+			Date.now() - cooldownDays * 24 * 60 * 60 * 1000,
+		).toISOString();
+
+		const rows = await conn.query<{
+			lottery_name: string;
+			selected_at: string;
+		}>(
+			`SELECT lottery_name, selected_at FROM applications
 			 WHERE applicant_id = ?
 			   AND status = 'selected'
-			   AND lottery_name >= ?
-			 ORDER BY lottery_name DESC
+			   AND selected_at >= ?
+			 ORDER BY selected_at DESC
 			 LIMIT 1`,
-			[applicantId, monthsAgo(lotteryName, COOLDOWN_MONTHS)],
+			[applicantId, cooldownThreshold],
 		);
 
 		if (rows.length === 0 || !rows[0]) {
 			return { status: "eligible" } as const;
 		}
 
+		const lastGrantSelectedAt = rows[0].selected_at;
+		const eligibleAfter = new Date(
+			new Date(lastGrantSelectedAt).getTime() +
+				cooldownDays * 24 * 60 * 60 * 1000,
+		).toISOString();
+
 		return {
 			status: "cooldown",
-			lastGrantMonth: rows[0].lottery_name,
+			lastGrantSelectedAt,
+			eligibleAfter,
+			cooldownDays,
 		} as const;
 	});
 }

@@ -91,7 +91,7 @@ function rejectionMessage(reason: string | null): string {
 		case "window_closed":
 			return "Applications are currently closed";
 		case "cooldown":
-			return "You've received a grant recently and are not yet eligible to apply again";
+			return "You've received a grant recently and are not yet eligible to apply again. Please try later.";
 		case "duplicate":
 			return "An application has already been submitted for this contact";
 		default:

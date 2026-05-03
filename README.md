@@ -119,6 +119,7 @@ PORT=443 FUND_NAME="Mutual Aid Fund" ./install.sh root@your-server
 | `GMAIL_USER` | — | Gmail address for SMTP sending (required if EMAIL_ENABLED=true) |
 | `GMAIL_APP_PASSWORD` | — | Gmail app password for SMTP auth (required if EMAIL_ENABLED=true) |
 | `EMAIL_FROM_NAME` | `Solidarity Fund` | Display name for the From field on notification emails |
+| `COOLDOWN_DAYS` | `90` | Number of days before a grant recipient can apply again |
 
 ### What lives where
 

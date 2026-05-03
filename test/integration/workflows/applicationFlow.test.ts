@@ -11,6 +11,8 @@ import {
 	submitAcceptedApplication,
 } from "../helpers/workflowSteps.ts";
 
+process.env.COOLDOWN_DAYS ??= "90";
+
 describe("application workflow", () => {
 	let env: TestEnv;
 
@@ -145,7 +147,12 @@ describe("application workflow", () => {
 					paymentPreference: "bank",
 					meetingPlace: "Mill Road",
 					lotteryName: "2026-03",
-					eligibility: { status: "cooldown", lastGrantMonth: "2026-01" },
+					eligibility: {
+						status: "cooldown",
+						lastGrantSelectedAt: "2026-01-15T10:00:00Z",
+						eligibleAfter: "2026-04-15T10:00:00Z",
+						cooldownDays: 90,
+					},
 				},
 				env.eventStore,
 				env.applicantRepo,
@@ -154,7 +161,7 @@ describe("application workflow", () => {
 			expect(events[1]!.type).toBe("ApplicationRejected");
 			expect(events[1]!.data).toMatchObject({
 				reason: "cooldown",
-				detail: "Last grant in 2026-01",
+				detail: "Eligible again after 15 April 2026",
 			});
 		});
 
@@ -585,9 +592,11 @@ describe("application workflow", () => {
 				"2026-03",
 				env.pool,
 			);
-			expect(eligibility).toEqual({
+			expect(eligibility).toMatchObject({
 				status: "cooldown",
-				lastGrantMonth: "2026-01",
+				lastGrantSelectedAt: expect.any(String),
+				eligibleAfter: expect.any(String),
+				cooldownDays: 90,
 			});
 		});
 
@@ -600,6 +609,9 @@ describe("application workflow", () => {
 				lotteryName: "2025-11",
 			});
 
+			const pastDate = new Date(
+				Date.now() - 120 * 24 * 60 * 60 * 1000,
+			).toISOString();
 			await env.eventStore.appendToStream("application-app-1", [
 				{
 					type: "ApplicationSelected",
@@ -608,7 +620,7 @@ describe("application workflow", () => {
 						applicantId: toApplicantId("07700900001", "Alice"),
 						lotteryName: "2025-11",
 						rank: 1,
-						selectedAt: new Date().toISOString(),
+						selectedAt: pastDate,
 					},
 				},
 			]);
@@ -626,6 +638,7 @@ describe("application workflow", () => {
 		test("cooldown across year boundary", async () => {
 			await openWindow(env, "2026-02");
 
+			const recentDate = new Date().toISOString();
 			await env.eventStore.appendToStream("application-app-1", [
 				{
 					type: "ApplicationSubmitted",
@@ -636,7 +649,7 @@ describe("application workflow", () => {
 						paymentPreference: "bank",
 						meetingDetails: { place: "Mill Road" },
 						lotteryName: "2025-12",
-						submittedAt: new Date().toISOString(),
+						submittedAt: recentDate,
 					},
 				},
 				{
@@ -645,7 +658,7 @@ describe("application workflow", () => {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900001",
 						lotteryName: "2025-12",
-						acceptedAt: new Date().toISOString(),
+						acceptedAt: recentDate,
 					},
 				},
 				{
@@ -655,7 +668,7 @@ describe("application workflow", () => {
 						applicantId: "applicant-07700900001",
 						lotteryName: "2025-12",
 						rank: 1,
-						selectedAt: new Date().toISOString(),
+						selectedAt: recentDate,
 					},
 				},
 			]);
@@ -667,15 +680,18 @@ describe("application workflow", () => {
 				"2026-02",
 				env.pool,
 			);
-			expect(result).toEqual({
+			expect(result).toMatchObject({
 				status: "cooldown",
-				lastGrantMonth: "2025-12",
+				lastGrantSelectedAt: expect.any(String),
+				eligibleAfter: expect.any(String),
+				cooldownDays: 90,
 			});
 		});
 
 		test("cooldown returns most recent selected month", async () => {
 			await openWindow(env, "2026-03");
 
+			const recentDate = new Date().toISOString();
 			for (const [appId, month] of [
 				["app-1", "2026-01"],
 				["app-2", "2026-02"],
@@ -690,7 +706,7 @@ describe("application workflow", () => {
 							paymentPreference: "bank",
 							meetingDetails: { place: "Mill Road" },
 							lotteryName: month,
-							submittedAt: new Date().toISOString(),
+							submittedAt: recentDate,
 						},
 					},
 					{
@@ -699,7 +715,7 @@ describe("application workflow", () => {
 							applicationId: appId,
 							applicantId: "applicant-07700900001",
 							lotteryName: month,
-							acceptedAt: new Date().toISOString(),
+							acceptedAt: recentDate,
 						},
 					},
 					{
@@ -709,7 +725,7 @@ describe("application workflow", () => {
 							applicantId: "applicant-07700900001",
 							lotteryName: month,
 							rank: 1,
-							selectedAt: new Date().toISOString(),
+							selectedAt: recentDate,
 						},
 					},
 				]);
@@ -722,9 +738,11 @@ describe("application workflow", () => {
 				"2026-03",
 				env.pool,
 			);
-			expect(result).toEqual({
+			expect(result).toMatchObject({
 				status: "cooldown",
-				lastGrantMonth: "2026-02",
+				lastGrantSelectedAt: expect.any(String),
+				eligibleAfter: expect.any(String),
+				cooldownDays: 90,
 			});
 		});
 
@@ -797,6 +815,7 @@ describe("application workflow", () => {
 		});
 
 		test("skipWindowCheck still enforces cooldown", async () => {
+			const recentDate = new Date().toISOString();
 			await env.eventStore.appendToStream("application-app-1", [
 				{
 					type: "ApplicationSubmitted",
@@ -807,7 +826,7 @@ describe("application workflow", () => {
 						paymentPreference: "bank",
 						meetingDetails: { place: "Mill Road" },
 						lotteryName: "2026-02",
-						submittedAt: new Date().toISOString(),
+						submittedAt: recentDate,
 					},
 				},
 				{
@@ -816,7 +835,7 @@ describe("application workflow", () => {
 						applicationId: "app-1",
 						applicantId: "applicant-07700900001",
 						lotteryName: "2026-02",
-						acceptedAt: new Date().toISOString(),
+						acceptedAt: recentDate,
 					},
 				},
 				{
@@ -826,7 +845,7 @@ describe("application workflow", () => {
 						applicantId: "applicant-07700900001",
 						lotteryName: "2026-02",
 						rank: 1,
-						selectedAt: new Date().toISOString(),
+						selectedAt: recentDate,
 					},
 				},
 			]);
@@ -839,9 +858,11 @@ describe("application workflow", () => {
 				env.pool,
 				{ skipWindowCheck: true },
 			);
-			expect(result).toEqual({
+			expect(result).toMatchObject({
 				status: "cooldown",
-				lastGrantMonth: "2026-02",
+				lastGrantSelectedAt: expect.any(String),
+				eligibleAfter: expect.any(String),
+				cooldownDays: 90,
 			});
 		});
 
