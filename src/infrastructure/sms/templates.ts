@@ -47,7 +47,7 @@ const defaultTemplates: Record<
 	CashAlternativeAccepted: undefined,
 	CashAlternativeDeclined: undefined,
 	GrantPaid: ({ fundName }) => ({
-		body: `Your grant from ${fundName} has been paid. Please let us know when you receive it.`,
+		body: `Your grant from ${fundName} has been paid. Please let us know if you have not received it.`,
 	}),
 	SlotReleased: undefined,
 	VolunteerReimbursed: undefined,
