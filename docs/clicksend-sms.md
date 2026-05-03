@@ -39,6 +39,7 @@ Both channels fire on the same domain events. Email sends rich HTML to the appli
 | `ApplicationAccepted` | "Your application has been accepted." | Approval notice with details |
 | `ApplicationRejected` | "Your application could not be approved: {reason}." | Rejection notice including reason |
 | `ApplicationSelected` | "Your application has been selected in the lottery." | Lottery selection confirmation |
+| `ApplicationNotSelected` | "Unfortunately you were not selected in this month's lottery. Please apply again next month." | Lottery non-selection notification |
 | `GrantPaid` | "Your grant has been paid." | Payment confirmation |
 
 Intermediate operational events (volunteer assigned, proof of address approved, etc.) do **not** trigger any notification.

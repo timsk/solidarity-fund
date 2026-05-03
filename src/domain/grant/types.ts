@@ -86,17 +86,6 @@ export type RecordPayment = Command<
 	}
 >;
 
-export type PayGrant = Command<
-	"PayGrant",
-	{
-		grantId: string;
-		amount: number;
-		method: "bank" | "cash";
-		paidBy: string;
-		paidAt: string;
-	}
->;
-
 export type ReleaseSlot = Command<
 	"ReleaseSlot",
 	{
@@ -125,7 +114,7 @@ export type GrantCommand =
 	| RejectProofOfAddress
 	| AcceptCashAlternative
 	| DeclineCashAlternative
-	| PayGrant
+	| RecordPayment
 	| ReleaseSlot
 	| RecordReimbursement;
 

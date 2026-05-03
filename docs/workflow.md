@@ -189,6 +189,8 @@ flowchart TD
 | `ReviewApplication` | Volunteer | flagged | Confirms or rejects flagged identity; re-checks eligibility if confirmed |
 | `SelectApplication` | System (process manager) | accepted, confirmed | Marks applicant as lottery winner with rank |
 | `RejectFromLottery` | System (process manager) | accepted, confirmed | Marks applicant as not selected this month |
+| `ApplicationLotteryCancelled` | System (process manager) | accepted, confirmed | Reverts application to cancelled status when lottery is cancelled |
+| `RevertReviewApplication` | Volunteer | accepted, confirmed | Reverts review decision; returns application to flagged status for re-review |
 
 #### Events
 
@@ -221,7 +223,6 @@ Applicant holds identity only (phone, name, email). Per-application choices (pay
 | `VolunteerDisabled` | Admin disables volunteer | Volunteer cannot log in until re-enabled |
 | `VolunteerEnabled` | Admin re-enables volunteer | Volunteer can log in again |
 | `PasswordChanged` | Volunteer changes password | Update password hash; invalidate other sessions |
-| `VolunteerDeleted` | Admin removes volunteer | Soft-delete from read model |
 
 ### Lottery Aggregate (implemented)
 
