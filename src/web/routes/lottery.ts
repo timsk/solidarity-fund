@@ -28,7 +28,7 @@ type LotteryWindowRow = { lottery_name: string; status: string };
 async function getWindowStatus(
 	lotteryName: string,
 	pool: ReturnType<typeof SQLiteConnectionPool>,
-): Promise<"initial" | "open" | "windowClosed" | "drawn"> {
+): Promise<"initial" | "open" | "windowClosed" | "drawn" | "cancelled"> {
 	return pool.withConnection(async (conn) => {
 		const tableRows = await conn.query<{ name: string }>(
 			"SELECT name FROM sqlite_master WHERE type='table' AND name='lottery_windows'",
@@ -44,6 +44,7 @@ async function getWindowStatus(
 		if (row.status === "open") return "open";
 		if (row.status === "closed") return "windowClosed";
 		if (row.status === "drawn") return "drawn";
+		if (row.status === "cancelled") return "cancelled";
 		return "initial";
 	});
 }
