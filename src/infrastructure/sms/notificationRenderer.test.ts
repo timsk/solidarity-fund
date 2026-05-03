@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import type { ReadEvent } from "@event-driven-io/emmett";
 import type { SQLiteConnectionPool } from "@event-driven-io/emmett-sqlite";
+import { resetBaseUrl } from "../../config.ts";
 import { renderSmsNotification } from "./notificationRenderer.ts";
 
 type FakePool = {
@@ -192,4 +193,38 @@ test("returned shape always has channel: sms", async () => {
 		pool as FakePool as unknown as ReturnType<typeof SQLiteConnectionPool>,
 	);
 	expect(result?.channel).toBe("sms");
+});
+
+test("body includes status URL when BASE_URL is set", async () => {
+	const prev = process.env.BASE_URL;
+	process.env.BASE_URL = "https://example.com";
+	resetBaseUrl();
+	try {
+		const pool = createFakePool("+447777777777");
+		const result = await renderSmsNotification(
+			{
+				type: "ApplicationSubmitted",
+				kind: "Event",
+				data: {
+					applicationId: "app-123",
+					applicantId: "applicant-1",
+					identity: {
+						phone: "+441234567890",
+						name: "John Doe",
+					},
+					paymentPreference: "bank",
+					lotteryName: "2025-04",
+					submittedAt: "2025-04-10T00:00:00Z",
+				},
+			} as ReadEvent<any>,
+			pool as FakePool as unknown as ReturnType<typeof SQLiteConnectionPool>,
+		);
+		expect(result).not.toBeNull();
+		expect(result?.body).toContain("/status?ref=app-123");
+		expect(result?.body).toContain("https://example.com");
+	} finally {
+		if (prev === undefined) delete process.env.BASE_URL;
+		else process.env.BASE_URL = prev;
+		resetBaseUrl();
+	}
 });

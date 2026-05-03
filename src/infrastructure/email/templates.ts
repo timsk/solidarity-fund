@@ -9,6 +9,7 @@ export type EmailTemplateVariables = {
 	fundName: string;
 	shortId: string;
 	reason?: string;
+	statusUrl?: string;
 };
 
 export type EmailTemplate = (variables: EmailTemplateVariables) => {
@@ -20,27 +21,47 @@ const defaultTemplates: Record<
 	ApplicationEventType | GrantEventType,
 	EmailTemplate | undefined
 > = {
-	ApplicationSubmitted: ({ fundName, shortId }) => ({
+	ApplicationSubmitted: ({ fundName, shortId, statusUrl }) => ({
 		subject: "Application received",
-		html: `<p>Your application for <strong>${fundName}</strong> (ID: ${shortId}) has been received.</p><p>We'll review it and be in touch.</p>`,
+		html: `<p>Your application for <strong>${fundName}</strong> (ID: ${shortId}) has been received.</p><p>We'll review it and be in touch.</p>${
+			statusUrl
+				? `<p><a href="${statusUrl}">Track your application status</a></p>`
+				: ""
+		}`,
 	}),
-	ApplicationAccepted: ({ fundName, shortId }) => ({
+	ApplicationAccepted: ({ fundName, shortId, statusUrl }) => ({
 		subject: "Application accepted",
-		html: `<p>Your application for <strong>${fundName}</strong> (ID: ${shortId}) has been accepted.</p><p>We'll be in touch with next steps.</p>`,
+		html: `<p>Your application for <strong>${fundName}</strong> (ID: ${shortId}) has been accepted.</p><p>We'll be in touch with next steps.</p>${
+			statusUrl
+				? `<p><a href="${statusUrl}">Track your application status</a></p>`
+				: ""
+		}`,
 	}),
-	ApplicationRejected: ({ fundName, shortId, reason }) => ({
+	ApplicationRejected: ({ fundName, shortId, reason, statusUrl }) => ({
 		subject: "Application update",
-		html: `<p>Your application for <strong>${fundName}</strong> (ID: ${shortId}) could not be approved.</p><p>Reason: <em>${reason ?? "Not specified"}</em>.</p>`,
+		html: `<p>Your application for <strong>${fundName}</strong> (ID: ${shortId}) could not be approved.</p><p>Reason: <em>${reason ?? "Not specified"}</em>.</p>${
+			statusUrl
+				? `<p><a href="${statusUrl}">Track your application status</a></p>`
+				: ""
+		}`,
 	}),
 	ApplicationConfirmed: undefined,
 	ApplicationFlaggedForReview: undefined,
-	ApplicationSelected: ({ fundName, shortId }) => ({
+	ApplicationSelected: ({ fundName, shortId, statusUrl }) => ({
 		subject: "Good news — selected in lottery",
-		html: `<p>Good news — your application for <strong>${fundName}</strong> (ID: ${shortId}) has been selected in this month's lottery.</p><p>A volunteer will contact you about receiving your grant.</p>`,
+		html: `<p>Good news — your application for <strong>${fundName}</strong> (ID: ${shortId}) has been selected in this month's lottery.</p><p>A volunteer will contact you about receiving your grant.</p>${
+			statusUrl
+				? `<p><a href="${statusUrl}">Track your application status</a></p>`
+				: ""
+		}`,
 	}),
-	ApplicationNotSelected: ({ fundName, shortId }) => ({
+	ApplicationNotSelected: ({ fundName, shortId, statusUrl }) => ({
 		subject: "This month's lottery results",
-		html: `<p>Thank you for applying to <strong>${fundName}</strong> (ID: ${shortId}).</p><p>Unfortunately you were not selected in this month's lottery. Please apply again next month.</p>`,
+		html: `<p>Thank you for applying to <strong>${fundName}</strong> (ID: ${shortId}).</p><p>Unfortunately you were not selected in this month's lottery. Please apply again next month.</p>${
+			statusUrl
+				? `<p><a href="${statusUrl}">Track your application status</a></p>`
+				: ""
+		}`,
 	}),
 	GrantCreated: undefined,
 	VolunteerAssigned: undefined,
@@ -50,9 +71,13 @@ const defaultTemplates: Record<
 	CashAlternativeOffered: undefined,
 	CashAlternativeAccepted: undefined,
 	CashAlternativeDeclined: undefined,
-	GrantPaid: ({ fundName, shortId }) => ({
+	GrantPaid: ({ fundName, shortId, statusUrl }) => ({
 		subject: "Grant payment confirmation",
-		html: `<p>Your grant from <strong>${fundName}</strong> (ID: ${shortId}) has been paid.</p><p>Please let us know when you receive it.</p>`,
+		html: `<p>Your grant from <strong>${fundName}</strong> (ID: ${shortId}) has been paid.</p><p>Please let us know when you receive it.</p>${
+			statusUrl
+				? `<p><a href="${statusUrl}">Track your application status</a></p>`
+				: ""
+		}`,
 	}),
 	SlotReleased: undefined,
 	VolunteerReimbursed: undefined,
@@ -71,5 +96,6 @@ export function getTemplateVariables(
 		fundName: smsVars.fundName,
 		shortId: smsVars.shortId,
 		reason: smsVars.reason,
+		statusUrl: smsVars.statusUrl,
 	};
 }

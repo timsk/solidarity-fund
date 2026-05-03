@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { getCooldownDays, resetCooldownDays } from "./config.ts";
+import {
+	getBaseUrl,
+	getCooldownDays,
+	resetBaseUrl,
+	resetCooldownDays,
+} from "./config.ts";
 
 describe("getCooldownDays", () => {
 	let saved: string | undefined;
@@ -79,5 +84,54 @@ describe("getCooldownDays", () => {
 
 		resetCooldownDays();
 		expect(getCooldownDays()).toBe(60);
+	});
+});
+
+describe("getBaseUrl", () => {
+	let saved: string | undefined;
+
+	beforeEach(() => {
+		saved = process.env.BASE_URL;
+		resetBaseUrl();
+	});
+
+	afterEach(() => {
+		if (saved === undefined) {
+			delete process.env.BASE_URL;
+		} else {
+			process.env.BASE_URL = saved;
+		}
+		resetBaseUrl();
+	});
+
+	it("returns empty string when BASE_URL is unset", () => {
+		delete process.env.BASE_URL;
+		resetBaseUrl();
+		expect(getBaseUrl()).toBe("");
+	});
+
+	it("returns the env value when BASE_URL is set", () => {
+		process.env.BASE_URL = "https://example.com";
+		resetBaseUrl();
+		expect(getBaseUrl()).toBe("https://example.com");
+	});
+
+	it("returns cached value without re-reading env", () => {
+		process.env.BASE_URL = "https://first.com";
+		resetBaseUrl();
+		expect(getBaseUrl()).toBe("https://first.com");
+
+		process.env.BASE_URL = "https://second.com";
+		expect(getBaseUrl()).toBe("https://first.com");
+	});
+
+	it("resetBaseUrl clears cache so next call re-reads env", () => {
+		process.env.BASE_URL = "https://first.com";
+		resetBaseUrl();
+		expect(getBaseUrl()).toBe("https://first.com");
+
+		process.env.BASE_URL = "https://second.com";
+		resetBaseUrl();
+		expect(getBaseUrl()).toBe("https://second.com");
 	});
 });

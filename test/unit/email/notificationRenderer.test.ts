@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import type { ReadEvent } from "@event-driven-io/emmett";
 import type { SQLiteConnectionPool } from "@event-driven-io/emmett-sqlite";
+import { resetBaseUrl } from "../../../src/config.ts";
 import { renderEmailNotification } from "../../../src/infrastructure/email/notificationRenderer.ts";
 
 type FakePool = {
@@ -132,4 +133,40 @@ test("returns null when applicantId exists but no email in DB", async () => {
 		pool as FakePool as unknown as ReturnType<typeof SQLiteConnectionPool>,
 	);
 	expect(result).toBeNull();
+});
+
+test("body includes status link when BASE_URL is set", async () => {
+	const prev = process.env.BASE_URL;
+	process.env.BASE_URL = "https://example.com";
+	resetBaseUrl();
+	try {
+		const pool = createFakePool("john@example.com");
+		const result = await renderEmailNotification(
+			{
+				type: "ApplicationSubmitted",
+				kind: "Event",
+				data: {
+					applicationId: "app-123",
+					applicantId: "applicant-1",
+					identity: {
+						phone: "+441234567890",
+						name: "John Doe",
+						email: "john@example.com",
+					},
+					paymentPreference: "bank",
+					lotteryName: "2025-04",
+					submittedAt: "2025-04-10T00:00:00Z",
+				},
+			} as ReadEvent<any>,
+			pool as FakePool as unknown as ReturnType<typeof SQLiteConnectionPool>,
+		);
+		expect(result).not.toBeNull();
+		expect(result?.body).toContain("/status?ref=app-123");
+		expect(result?.body).toContain("https://example.com");
+		expect(result?.body).toContain("Track your application status");
+	} finally {
+		if (prev === undefined) delete process.env.BASE_URL;
+		else process.env.BASE_URL = prev;
+		resetBaseUrl();
+	}
 });

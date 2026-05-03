@@ -117,3 +117,16 @@ export function getCooldownDays(): number {
 export function resetCooldownDays(): void {
 	_cooldownDays = null;
 }
+
+let _baseUrl: string | null = null;
+
+export function getBaseUrl(): string {
+	if (_baseUrl !== null) return _baseUrl;
+	_baseUrl = process.env.BASE_URL ?? "";
+	return _baseUrl;
+}
+
+// fallow-ignore-next-line unused-exports
+export function resetBaseUrl(): void {
+	_baseUrl = null;
+}

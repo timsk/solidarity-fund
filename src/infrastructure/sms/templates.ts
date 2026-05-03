@@ -1,4 +1,4 @@
-import { getFundName } from "../../config.ts";
+import { getBaseUrl, getFundName } from "../../config.ts";
 import type {
 	ApplicationEvent,
 	ApplicationEventType,
@@ -10,6 +10,7 @@ export type SmsTemplateVariables = {
 	shortId: string;
 	reason?: string;
 	months?: number;
+	statusUrl?: string;
 };
 
 export type SmsTemplate = (variables: SmsTemplateVariables) => {
@@ -21,22 +22,32 @@ const defaultTemplates: Record<
 	ApplicationEventType | GrantEventType,
 	SmsTemplate | undefined
 > = {
-	ApplicationSubmitted: ({ fundName, shortId }) => ({
-		body: `Your application for ${fundName} (ID: ${shortId}) has been received.`,
+	ApplicationSubmitted: ({ fundName, shortId, statusUrl }) => ({
+		body: `Your application for ${fundName} (ID: ${shortId}) has been received.${
+			statusUrl ? `\nTrack: ${statusUrl}` : ""
+		}`,
 	}),
-	ApplicationAccepted: ({ fundName }) => ({
-		body: `Your application for ${fundName} has been accepted. We'll be in touch with next steps.`,
+	ApplicationAccepted: ({ fundName, statusUrl }) => ({
+		body: `Your application for ${fundName} has been accepted. We'll be in touch with next steps.${
+			statusUrl ? `\nTrack: ${statusUrl}` : ""
+		}`,
 	}),
-	ApplicationRejected: ({ fundName, reason }) => ({
-		body: `Your application for ${fundName} could not be approved: ${reason}.`,
+	ApplicationRejected: ({ fundName, reason, statusUrl }) => ({
+		body: `Your application for ${fundName} could not be approved: ${reason}.${
+			statusUrl ? `\nTrack: ${statusUrl}` : ""
+		}`,
 	}),
 	ApplicationConfirmed: undefined,
 	ApplicationFlaggedForReview: undefined,
-	ApplicationSelected: ({ fundName }) => ({
-		body: `Good news — your application for ${fundName} has been selected in this month's lottery! A volunteer will contact you about receiving your grant.`,
+	ApplicationSelected: ({ fundName, statusUrl }) => ({
+		body: `Good news — your application for ${fundName} has been selected in this month's lottery! A volunteer will contact you about receiving your grant.${
+			statusUrl ? `\nTrack: ${statusUrl}` : ""
+		}`,
 	}),
-	ApplicationNotSelected: ({ fundName }) => ({
-		body: `Thank you for applying to ${fundName}. Unfortunately you were not selected in this month's lottery. Please apply again next month.`,
+	ApplicationNotSelected: ({ fundName, statusUrl }) => ({
+		body: `Thank you for applying to ${fundName}. Unfortunately you were not selected in this month's lottery. Please apply again next month.${
+			statusUrl ? `\nTrack: ${statusUrl}` : ""
+		}`,
 	}),
 	GrantCreated: undefined,
 	VolunteerAssigned: undefined,
@@ -46,8 +57,10 @@ const defaultTemplates: Record<
 	CashAlternativeOffered: undefined,
 	CashAlternativeAccepted: undefined,
 	CashAlternativeDeclined: undefined,
-	GrantPaid: ({ fundName }) => ({
-		body: `Your grant from ${fundName} has been paid. Please let us know if you have not received it.`,
+	GrantPaid: ({ fundName, statusUrl }) => ({
+		body: `Your grant from ${fundName} has been paid. Please let us know if you have not received it.${
+			statusUrl ? `\nTrack: ${statusUrl}` : ""
+		}`,
 	}),
 	SlotReleased: undefined,
 	VolunteerReimbursed: undefined,
@@ -66,15 +79,23 @@ export function getTemplateVariables(
 			? event.data.applicationId.slice(-6)
 			: (event.data.grantId?.slice(-6) ?? "");
 
+	const applicationId =
+		"applicationId" in event.data ? event.data.applicationId : undefined;
+
+	const ref = applicationId?.slice(0, 8);
+	const baseUrl = getBaseUrl();
+	const statusUrl = ref && baseUrl ? `${baseUrl}/status?ref=${ref}` : undefined;
+
 	if (event.type === "ApplicationRejected") {
 		return {
 			fundName,
 			shortId,
 			reason: formatRejectionReason(event.data.reason),
+			statusUrl,
 		};
 	}
 
-	return { fundName, shortId };
+	return { fundName, shortId, statusUrl };
 }
 
 function formatRejectionReason(

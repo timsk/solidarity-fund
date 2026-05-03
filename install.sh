@@ -28,6 +28,7 @@ EXISTING_ENV=$(ssh "$SSH_TARGET" "cat '$ENV_FILE' 2>/dev/null" || true)
 		GMAIL_USER="${GMAIL_USER:-$(echo "$EXISTING_ENV" | grep '^GMAIL_USER=' | sed 's/^GMAIL_USER=//' | tr -d "'" || true)}"
 		GMAIL_APP_PASSWORD="${GMAIL_APP_PASSWORD:-$(echo "$EXISTING_ENV" | grep '^GMAIL_APP_PASSWORD=' | sed 's/^GMAIL_APP_PASSWORD=//' | tr -d "'" || true)}"
 		EMAIL_FROM_NAME="${EMAIL_FROM_NAME:-$(echo "$EXISTING_ENV" | grep '^EMAIL_FROM_NAME=' | sed 's/^EMAIL_FROM_NAME=//' | tr -d "'" || true)}"
+		BASE_URL="${BASE_URL:-$(echo "$EXISTING_ENV" | grep '^BASE_URL=' | sed 's/^BASE_URL=//' | tr -d "'" || true)}"
 	fi
 
 # Defaults for vars that can be overridden by remote .env
@@ -69,6 +70,7 @@ EMAIL_ENABLED='${EMAIL_ENABLED//\'/\'\\\'\'}'
 GMAIL_USER='${GMAIL_USER//\'/\'\\\'\'}'
 GMAIL_APP_PASSWORD='${GMAIL_APP_PASSWORD//\'/\'\\\'\'}'
 EMAIL_FROM_NAME='${EMAIL_FROM_NAME//\'/\'\\\'\'}'
+BASE_URL='${BASE_URL//\'/\'\\\'\'}'
 IMAGE='${IMAGE//\'/\'\\\'\'}'
 NODE_ENV=production
 EOF
