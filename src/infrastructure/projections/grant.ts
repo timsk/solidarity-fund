@@ -52,7 +52,6 @@ export const grantProjection = sqliteProjection<GrantEvent>({
 			if (!(e instanceof Error && e.message.includes("duplicate column")))
 				throw e;
 		}
-
 	},
 
 	handle: async (events, { connection }) => {

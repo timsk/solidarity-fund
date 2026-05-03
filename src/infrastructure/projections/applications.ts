@@ -46,7 +46,6 @@ export const applicationsProjection = sqliteProjection<ApplicationEvent>({
 		} catch {
 			// Column already exists (added by CREATE TABLE IF NOT EXISTS above)
 		}
-
 	},
 
 	handle: async (events, { connection }) => {

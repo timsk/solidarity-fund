@@ -179,3 +179,86 @@ describe("autoCloseExpiredLottery", () => {
 		expect(closeCallCount).toBe(1);
 	});
 });
+
+describe("getCurrentLotteryName", () => {
+	function makeMockPool(queryResults: unknown[][] | null) {
+		let callIndex = 0;
+		return {
+			withConnection: async (
+				fn: (conn: { query: () => unknown }) => unknown,
+			) => {
+				if (queryResults === null) throw new Error("db error");
+				const results = queryResults;
+				return fn({
+					query: () => {
+						const row = results[callIndex % results.length]!;
+						callIndex++;
+						return row;
+					},
+				});
+			},
+		};
+	}
+
+	test("returns default name when no lottery_windows table", async () => {
+		const { getCurrentLotteryName, defaultLotteryName } = await import(
+			"../../src/web/routes/utils.ts"
+		);
+		const pool = makeMockPool([[]]);
+		const name = await getCurrentLotteryName(pool as never);
+		expect(name).toBe(defaultLotteryName());
+	});
+
+	test("returns the open lottery when a drawn lottery sorts later alphabetically", async () => {
+		const { getCurrentLotteryName } = await import(
+			"../../src/web/routes/utils.ts"
+		);
+		const pool = makeMockPool([
+			[{ name: "lottery_windows" }],
+			[
+				{ lottery_name: "3 May, first test run", status: "open" },
+				{ lottery_name: "test", status: "drawn" },
+			],
+		]);
+		const name = await getCurrentLotteryName(pool as never);
+		expect(name).toBe("3 May, first test run");
+	});
+
+	test("returns the open lottery when a cancelled lottery sorts later alphabetically", async () => {
+		const { getCurrentLotteryName } = await import(
+			"../../src/web/routes/utils.ts"
+		);
+		const pool = makeMockPool([
+			[{ name: "lottery_windows" }],
+			[
+				{ lottery_name: "April Lottery", status: "open" },
+				{ lottery_name: "z-last-alphabetically", status: "cancelled" },
+			],
+		]);
+		const name = await getCurrentLotteryName(pool as never);
+		expect(name).toBe("April Lottery");
+	});
+
+	test("falls back to most recent non-open lottery when none is open", async () => {
+		const { getCurrentLotteryName } = await import(
+			"../../src/web/routes/utils.ts"
+		);
+		const pool = makeMockPool([
+			[{ name: "lottery_windows" }],
+			[
+				{ lottery_name: "2026-05", status: "cancelled" },
+				{ lottery_name: "2026-03", status: "drawn" },
+			],
+		]);
+		const name = await getCurrentLotteryName(pool as never);
+		expect(name).toBe("2026-05");
+	});
+
+	test("db error falls back to default name", async () => {
+		const { getCurrentLotteryName, defaultLotteryName } = await import(
+			"../../src/web/routes/utils.ts"
+		);
+		const name = await getCurrentLotteryName(null as never);
+		expect(name).toBe(defaultLotteryName());
+	});
+});

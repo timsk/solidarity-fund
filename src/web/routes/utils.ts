@@ -40,7 +40,7 @@ export async function getCurrentLotteryName(
 			if (tables.length === 0) return defaultLotteryName();
 
 			const rows = await conn.query<{ lottery_name: string }>(
-				"SELECT lottery_name FROM lottery_windows ORDER BY lottery_name DESC LIMIT 1",
+				"SELECT lottery_name FROM lottery_windows ORDER BY CASE WHEN status = 'open' THEN 0 ELSE 1 END, lottery_name DESC LIMIT 1",
 			);
 			return rows[0]?.lottery_name ?? defaultLotteryName();
 		});

@@ -25,7 +25,6 @@ export const lotteryWindowProjection = sqliteProjection<LotteryEvent>({
 		} catch {
 			// Column already exists
 		}
-
 	},
 
 	handle: async (events, { connection }) => {
