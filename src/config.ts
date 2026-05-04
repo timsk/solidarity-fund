@@ -97,6 +97,26 @@ export function resetEmailConfig(): void {
 	_emailConfig = null;
 }
 
+let _autoApproveConfig: AutoApproveConfig | null = null;
+
+export type AutoApproveConfig = {
+	enabled: boolean;
+};
+
+export function getAutoApproveConfig(): AutoApproveConfig {
+	if (_autoApproveConfig) return _autoApproveConfig;
+
+	const enabled = process.env.AUTO_APPROVE_ELIGIBLE !== "false";
+
+	_autoApproveConfig = { enabled };
+	return _autoApproveConfig;
+}
+
+// fallow-ignore-next-line unused-exports
+export function resetAutoApproveConfig(): void {
+	_autoApproveConfig = null;
+}
+
 let _cooldownDays: number | null = null;
 
 export function getCooldownDays(): number {

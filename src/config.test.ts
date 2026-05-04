@@ -1,10 +1,61 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import {
+	getAutoApproveConfig,
 	getBaseUrl,
 	getCooldownDays,
+	resetAutoApproveConfig,
 	resetBaseUrl,
 	resetCooldownDays,
 } from "./config.ts";
+
+describe("getAutoApproveConfig", () => {
+	let saved: string | undefined;
+
+	beforeEach(() => {
+		saved = process.env.AUTO_APPROVE_ELIGIBLE;
+		resetAutoApproveConfig();
+	});
+
+	afterEach(() => {
+		if (saved === undefined) {
+			delete process.env.AUTO_APPROVE_ELIGIBLE;
+		} else {
+			process.env.AUTO_APPROVE_ELIGIBLE = saved;
+		}
+		resetAutoApproveConfig();
+	});
+
+	it("returns enabled=true when AUTO_APPROVE_ELIGIBLE is unset", () => {
+		delete process.env.AUTO_APPROVE_ELIGIBLE;
+		resetAutoApproveConfig();
+		expect(getAutoApproveConfig().enabled).toBe(true);
+	});
+
+	it("returns enabled=true when AUTO_APPROVE_ELIGIBLE=true", () => {
+		process.env.AUTO_APPROVE_ELIGIBLE = "true";
+		resetAutoApproveConfig();
+		expect(getAutoApproveConfig().enabled).toBe(true);
+	});
+
+	it("returns enabled=false when AUTO_APPROVE_ELIGIBLE=false", () => {
+		process.env.AUTO_APPROVE_ELIGIBLE = "false";
+		resetAutoApproveConfig();
+		expect(getAutoApproveConfig().enabled).toBe(false);
+	});
+
+	it("resetAutoApproveConfig clears cache so next call re-reads env", () => {
+		process.env.AUTO_APPROVE_ELIGIBLE = "true";
+		resetAutoApproveConfig();
+		expect(getAutoApproveConfig().enabled).toBe(true);
+
+		process.env.AUTO_APPROVE_ELIGIBLE = "false";
+		// Without reset, cached value (true) should still return
+		expect(getAutoApproveConfig().enabled).toBe(true);
+
+		resetAutoApproveConfig();
+		expect(getAutoApproveConfig().enabled).toBe(false);
+	});
+});
 
 describe("getCooldownDays", () => {
 	let saved: string | undefined;

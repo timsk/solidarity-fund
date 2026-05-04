@@ -50,6 +50,7 @@ export type SubmitApplication = Command<
 		eligibility: EligibilityResult;
 		submittedAt: string;
 		bankDetails?: BankDetails;
+		autoApproveEnabled?: boolean;
 	}
 >;
 

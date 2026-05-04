@@ -20,6 +20,7 @@ import {
 	getCurrentLotteryName,
 	getLotteryClosingTimestamp,
 } from "./utils.ts";
+import { getAutoApproveConfig } from "../../config.ts";
 
 function drawDate(lotteryName: string): string {
 	const [year, month] = lotteryName.split("-").map(Number) as [number, number];
@@ -218,6 +219,7 @@ export function createApplyRoutes(
 						lotteryName,
 						eligibility,
 						bankDetails,
+						autoApproveEnabled: getAutoApproveConfig().enabled,
 					},
 					eventStore,
 					applicantRepo,

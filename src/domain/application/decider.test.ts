@@ -50,7 +50,10 @@ function makeSubmitCommand(overrides?: {
 	}
 		? D["eligibility"]
 		: never;
+	autoApproveEnabled?: boolean;
 }) {
+	const { autoApproveEnabled, ...rest } = overrides ?? {};
+
 	return {
 		type: "SubmitApplication" as const,
 		data: {
@@ -59,11 +62,12 @@ function makeSubmitCommand(overrides?: {
 			paymentPreference: "bank" as const,
 			meetingDetails: { place: "Town Hall" },
 			lotteryName: MONTH,
-			identityResolution: overrides?.identityResolution ?? {
+			identityResolution: rest.identityResolution ?? {
 				type: "new" as const,
 			},
-			eligibility: overrides?.eligibility ?? { status: "eligible" as const },
+			eligibility: rest.eligibility ?? { status: "eligible" as const },
 			submittedAt: NOW,
+			...(autoApproveEnabled !== undefined && { autoApproveEnabled }),
 		},
 	};
 }
@@ -76,6 +80,18 @@ describe("application decider", () => {
 			expect(events).toHaveLength(2);
 			expect(events[0]?.type).toBe("ApplicationSubmitted");
 			expect(events[1]?.type).toBe("ApplicationAccepted");
+		});
+
+		it("emits ApplicationSubmitted + ApplicationFlaggedForReview when eligible but auto-approval disabled", () => {
+			const events = decide(
+				makeSubmitCommand({ autoApproveEnabled: false }),
+				initialState(),
+			);
+
+			expect(events).toHaveLength(2);
+			expect(events[0]?.type).toBe("ApplicationSubmitted");
+			expect(events[1]?.type).toBe("ApplicationFlaggedForReview");
+			expect(events[1]?.data).toMatchObject({ reason: "Auto-approval disabled" });
 		});
 
 		it("derives applicantId from phone+name for new identity", () => {

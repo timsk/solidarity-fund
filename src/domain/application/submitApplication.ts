@@ -25,6 +25,7 @@ export type ApplicationFormData = {
 		accountNumber: string;
 		proofOfAddressRef: string;
 	};
+	autoApproveEnabled?: boolean;
 };
 
 const handle = CommandHandler<
@@ -61,6 +62,7 @@ export async function submitApplication(
 			eligibility: form.eligibility,
 			submittedAt: new Date().toISOString(),
 			bankDetails: form.bankDetails,
+			autoApproveEnabled: form.autoApproveEnabled,
 		},
 	};
 

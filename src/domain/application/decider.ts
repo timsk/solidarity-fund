@@ -116,6 +116,22 @@ function decideSubmit(
 
 	// Eligible — accepted
 	if (data.eligibility.status === "eligible") {
+		if (data.autoApproveEnabled === false) {
+			return [
+				submitted,
+				{
+					type: "ApplicationFlaggedForReview",
+					data: {
+						applicationId: data.applicationId,
+						applicantId,
+						reason: "Auto-approval disabled",
+						lotteryName: data.lotteryName,
+						flaggedAt: now,
+					},
+				},
+			];
+		}
+
 		return [
 			submitted,
 			{
